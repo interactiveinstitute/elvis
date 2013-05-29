@@ -76,6 +76,7 @@ App.prototype.construct = function(config, canvas, source) {
       if (this.firstData) {
         this.used = data.map(function(Wh, i) { return Wh - this.firstData[i]; }.bind(this));
         var total = this.used.reduce(sum);
+        console.log(this.used, this.firstData, total);
         if (total > this.measure) {
           var factor = this.measure / total;
           this.used = this.used.map(function(Wh) { return Wh * factor; });

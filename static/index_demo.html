@@ -1,0 +1,52 @@
+<!doctype html>
+
+<meta charset="utf-8">
+
+<title>Watt-Lite Twist</title>
+<link rel="shortcut icon" href="#">
+<style>
+  body { background: #000; margin: 0; }
+  canvas { display: block; }
+</style>
+
+<script src="app.js"></script>
+<script src="main.js"></script>
+
+<canvas id="display"></canvas>
+
+<script>
+  display.width = innerWidth;
+  display.height = innerHeight;
+
+window.window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(callback) {
+  window.setTimeout(callback, 1000 / 60);
+};
+
+var init = function(canvas) {
+  var request = new XMLHttpRequest();
+  request.open('GET', '/config');
+  request.onload = function() {
+    var config = JSON.parse(this.responseText);
+    var listeners = [];
+    var source = {
+      addEventListener: function(name, listener) {
+        if (name == 'energydata') listeners.push(listener);
+      }
+    };
+    var app = new App(config, canvas, source);
+    app.measure = 1000;
+    app.setState(App.STATE.PROGRESS);
+    app.firstData = [0, 0, 0, 0, 0, 0, 0];
+    listeners.forEach(function(listener) {
+      listener({
+        data: JSON.stringify([ .230, .181, .152, .067, .005, 0, 0 ])
+      });
+    });
+    console.log(app.used.reduce(sum));
+    app.toggleDetails(true);
+  };
+  request.send();
+};
+
+  init(display);
+</script>
