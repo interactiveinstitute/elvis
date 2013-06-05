@@ -3,6 +3,8 @@ import plugwise.util
 import serial
 import time
 
+import energy_watch
+
 class ForgivingCircle(plugwise.Circle):
   'Catches exceptions triggered by the plugwise methods by staying constant'
   
@@ -73,8 +75,7 @@ class EnergyCircle(ForgivingCircle):
     value = self.previous_kWh + self._hourly_pulses_to_kWh(self.current_pulses)
     return max(value, 0)
 
-class EnergyWatch(object):
-  'Returns the accumulated energy in the configured circles on  .measure()'
+class EnergyWatch(energy_watch.EnergyWatch):
   circles = []
   
   def __init__(self, config):    

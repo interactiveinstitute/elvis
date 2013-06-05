@@ -6,7 +6,7 @@ import time
 import tornado.ioloop
 import tornado.web
 
-from plugwise_energy_watch import EnergyWatch
+from energy_watch_plugwise import EnergyWatch
 import util
 
 class DataHandler(tornado.web.RequestHandler):
