@@ -6,7 +6,7 @@ import time
 import tornado.ioloop
 import tornado.web
 
-import energy_watch
+from plugwise_energy_watch import EnergyWatch
 import util
 
 class DataHandler(tornado.web.RequestHandler):
@@ -93,7 +93,7 @@ class TwistApp(tornado.web.Application, util.Publisher):
     
   def measure_and_publish(self):
     if not self.watch:
-      self.watch = energy_watch.EnergyWatch(config)
+      self.watch = EnergyWatch(config)
     self.cached_energy = ['%.10f' % val for val in self.watch.measure()]
     self.publish(TwistApp.Topic.TotalEnergy, self.cached_energy)
     
