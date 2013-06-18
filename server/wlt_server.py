@@ -10,6 +10,8 @@ from energy_watch_plugwise import EnergyWatch
 import util
 
 class DataHandler(tornado.web.RequestHandler):
+  'Sets up an EventSource stream to the client, emitting an energydata event with the measurement list on each update. If there are no measurements yet when the stream is set up, an init event is emitted.'
+
   def initialize(self, app):
     self.app = app
     self.app.subscribe(TwistApp.Topic.TotalEnergy, self.on_total_energy_update)
@@ -59,6 +61,8 @@ class DataHandler(tornado.web.RequestHandler):
     tornado.ioloop.IOLoop.instance().add_timeout(deadline, self.send_random_data)
 
 class JsonHandler(tornado.web.RequestHandler):
+  'Sends a static JSON string to clients. Used for the configuration object.'
+
   def initialize(self, json):
     self.json = json
     
@@ -68,10 +72,12 @@ class JsonHandler(tornado.web.RequestHandler):
     self.write(json.dumps(self.json))
 
 class TwistApp(tornado.web.Application, util.Publisher):
+  'TwistApp sets up an HTTP server that serves energy measurement data.'
+
+  # Topics that TwistApp may publish about. Currently only contais TotalEnergy, which is used by DataHandler instances to receive updates.
   class Topic:
     TotalEnergy = 1
-    
-  subscriptions = {}
+
   cached_energy = None
   
   def __init__(self, config):
@@ -83,20 +89,21 @@ class TwistApp(tornado.web.Application, util.Publisher):
       (r'/config', JsonHandler, { 'json': config.CLIENT_CONFIG }),
     ])
 
+    # Call .measure_and_publish periodically if sensor data is used.
     if not config.DRY_RUN:
       self.watch = None
-      
+
       loop = tornado.ioloop.IOLoop.instance()
       tornado.ioloop.PeriodicCallback(self.measure_and_publish, config.MEASURE_INTERVAL, loop).start()
-    
+
     self.listen(config.HTTP_PORT, '0.0.0.0')
-    
+
   def measure_and_publish(self):
     if not self.watch:
       self.watch = EnergyWatch(config)
     self.cached_energy = ['%.10f' % val for val in self.watch.measure()]
     self.publish(TwistApp.Topic.TotalEnergy, self.cached_energy)
-    
+
   def run(self):
     try: tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt: print

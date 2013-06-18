@@ -5,8 +5,10 @@ if SYSTEM == 'rpi':
 elif SYSTEM == 'mba':
   STICK_PORT = '/dev/tty.usbserial-A80060FG'
 
+# Port from which to serve the interface.
 HTTP_PORT = 8000
 
+# MAC addresses and colors for Plugwise Circle plugs.
 CIRCLES = {
   '000D6F0000AF6437': '#ff0000', # red
   '000D6F0000D32407': '#0000ff', # blue
@@ -18,12 +20,13 @@ CIRCLES = {
   '000D6F00039790A3': '#aaaaaa', # gray
 }
 
+# Interval at which to poll the Circles.
 MEASURE_INTERVAL = 1000 # ms
 
-RECOVERY_TIME = 1000 # ms
-
+# If true, don't bother with Plugwise and just use random data.
 DRY_RUN = False
 
+# A configuration JSON object sent to the client.
 CLIENT_CONFIG = {
   "circles": CIRCLES,
   "dry_run": DRY_RUN,
