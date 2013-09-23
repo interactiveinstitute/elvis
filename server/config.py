@@ -43,3 +43,7 @@ CLIENT_CONFIG = {
   },
   "countdown": 100
 }
+
+# Zway 
+ZWAVE_SERVER = 'localhost:8083'
+COLORS = CIRCLES.values()
