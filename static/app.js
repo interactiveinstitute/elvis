@@ -146,6 +146,7 @@ App.prototype.draw = function(t) {
   
   var ctx = this.canvas.getContext('2d');
 
+  ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   ctx.rect(0, 0, this.canvas.width, this.canvas.height);
   ctx.fillStyle = 'black';
   ctx.fill();
@@ -167,7 +168,7 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   ctx.beginPath();
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = this.config.display.lineWidth;
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, true);
+  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
   ctx.stroke();
   
   ctx.save();
@@ -197,7 +198,7 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.measure / 1000, 0, -(size));
+  ctx.fillText('' + (this.measure / 1000), 0, -(size));
   ctx.restore();
 };
 
@@ -225,7 +226,7 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(number, 0, -(size));
+  ctx.fillText('' + number, 0, -(size));
   ctx.restore();
 };
 
@@ -242,7 +243,7 @@ App.prototype.draw[App.STATE.PROGRESS_DETAILS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(number, 0, -(size));
+  ctx.fillText('' + number, 0, -(size));
   ctx.restore();
 };
 
@@ -252,7 +253,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.beginPath();
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = this.config.display.lineWidth;
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, true);
+  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
   ctx.stroke();
   
   ctx.save();
@@ -262,7 +263,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.measure / 1000, 0, -(size));
+  ctx.fillText('' + (this.measure / 1000), 0, -(size));
   ctx.restore();
   
   ctx.save();
@@ -323,7 +324,7 @@ App.prototype.draw[App.STATE.FINISHED_DETAILS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.measure / 1000, 0, -(size));
+  ctx.fillText('' + (this.measure / 1000), 0, -(size));
   ctx.restore();
   
   var totalMinutes = (this.end - this.start) / 1000 / 60;
@@ -364,7 +365,8 @@ App.prototype.getSizeForEnergy = function(energy) {
 };
 
 App.prototype.getFont = function(size) {
-  return size + 'pt HelveticaNeue-Bold';
+  //return size + 'pt HelveticaNeue-Bold';
+  return 'bold ' + size + 'pt sans-serif';
 };
 
 if (typeof module !== 'undefined' && module.exports) {
