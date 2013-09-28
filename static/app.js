@@ -187,7 +187,7 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   
   ctx.beginPath();
   ctx.fillStyle = '#fff';
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, true);
+  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
   ctx.fill();
   
   ctx.save();
@@ -209,7 +209,10 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   ctx.beginPath();
   ctx.fillStyle = '#fff';
   ctx.moveTo(u.cx, u.cy);
-  ctx.arc(u.cx, u.cy, size, -.5 * Math.PI, (-.5 + left * 2) * Math.PI, false);
+  if (left == 1)
+    ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
+  else
+    ctx.arc(u.cx, u.cy, size, -.5 * Math.PI, (-.5 + left * 2) * Math.PI, false);
   ctx.closePath();
   ctx.fill();
   
