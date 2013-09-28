@@ -7,11 +7,9 @@ var request = require('request');
 var mouse = new Mouse;
 
 request('http://localhost:8000/config', function(error, response, body) {
-  var width = 1920;
-  var height = 1080;
   var config = JSON.parse(body);
   var source = new EventSource('http://localhost:8000/data');
-  var canvas = new Canvas(width, height);
+  var canvas = new Canvas;
   var app = new App(config, canvas, source);
 
   mouse.on('scroll', function(direction) {
