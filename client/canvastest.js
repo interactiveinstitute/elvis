@@ -1,5 +1,24 @@
-var Canvas = require('./node-openvg-canvas/lib/canvas');
+var Canvas = require('openvg-canvas');
+var Mouse = require('./mouse');
 
+var mouse = new Mouse;
+
+mouse.on('scroll', function(direction) {
+  console.log('scroll', direction);
+});
+mouse.on('press', function() {
+  console.log('press');
+});
+
+var i = 0;
+var draw = function() {
+  console.log(i++);
+  requestAnimationFrame(draw);
+};
+
+requestAnimationFrame(draw);
+
+/*
 var width = 1920;
 var height = 1080;
 var padding = 20;
@@ -18,6 +37,8 @@ function easeInOutCubic(t) {
   // https://gist.github.com/gre/1650294
   return t < .5 ? 4*t*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1;
 };
+
+var i = 0;
 
 function easeInOutCirc(t) {
   // http://www.gizma.com/easing/
@@ -51,6 +72,9 @@ function draw(t) {
   ctx.restore();
   
   requestAnimationFrame(draw);
+
+  console.log(i++);
 };
 
 requestAnimationFrame(draw);
+*/
