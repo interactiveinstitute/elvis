@@ -23,13 +23,13 @@ CIRCLES = {
 # Interval at which to poll the Circles.
 MEASURE_INTERVAL = 1000 # ms
 
-# If true, don't bother with Plugwise and just use random data.
-DRY_RUN = False
+# The source can be 'zway', 'plugwise' or 'fake'.
+SOURCE = 'fake'
 
 # A configuration JSON object sent to the client.
 CLIENT_CONFIG = {
   "circles": CIRCLES,
-  "dry_run": DRY_RUN,
+  "dry_run": SOURCE == 'fake',
   "display": {
     "padding": 20,
     "lineWidth": 2,

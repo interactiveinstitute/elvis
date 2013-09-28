@@ -145,7 +145,11 @@ App.prototype.draw = function(t) {
   }
   
   var ctx = this.canvas.getContext('2d');
-  ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+  ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+  ctx.fillStyle = 'black';
+  ctx.fill();
+
   this.draw[this.state].bind(this)(ctx, t, this.drawUtil);
 };
 
@@ -360,4 +364,6 @@ App.prototype.getFont = function(size) {
   return size + 'pt HelveticaNeue-Bold';
 };
 
-// TODO set exports if it exists
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = App;
+}

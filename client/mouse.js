@@ -40,8 +40,11 @@ var Mouse = function() {
           if (error) throw error;
           if (event.type == 2 && event.code == 8) {
             me.emit('scroll', event.value);
-          } else if (event.type == 1 /* && event.code == 274*/ && event.value == 1 /* 0? */) {
-            me.emit('press');
+          } else if (event.type == 1 /* && event.code == 274*/) {
+            if (event.value == 1)
+              me.emit('press');
+            else
+              me.emit('release');
           }
         });
       });
