@@ -166,9 +166,11 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   var size = this.canvas.height / 2 - this.config.display.padding - this.config.display.lineWidth;
   
   ctx.beginPath();
+  ctx.fillStyle = '#000';
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = this.config.display.lineWidth;
   ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
+  ctx.fill();
   ctx.stroke();
   
   ctx.save();
@@ -251,9 +253,11 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   var size = this.getSizeForEnergy(this.measure);
   
   ctx.beginPath();
+  ctx.fillStyle = '#000';
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = this.config.display.lineWidth;
   ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
+  ctx.fill();
   ctx.stroke();
   
   ctx.save();
