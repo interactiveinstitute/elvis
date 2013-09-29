@@ -17,21 +17,33 @@ web browser or in Node.
 The web app has been tested in Chrome and Firefox. On Mac, it works
 better in Chrome.
 
-The Node version requires the `node-openvg-canvas` package and is meant
-to run on a Raspberry Pi.
+The Node version runs on a Raspberry Pi.
+
+There are three implementations: `plugwise`, `zwave` and `fake`. The
+`zwave` and `fake` implementations have been tested recently.
 
 
-How to set it up
-----------------
+How to set up your environment
+------------------------------
 
-1. Edit `config.py` to suit your needs.
+On a raspberry pi, run `tools/install.sh` to make the Node implementation
+work. Otherwise, just make sure you have `python-serial` installed.
+
+
+How to test it
+--------------
+
+1. Edit `config.py` to suit your needs. You may want to edit the `SOURCE`
+   variable to switch between implementations.
 2. Run: `cd server && ./wlt_server.py`.
 3. Either open `http://localhost:8000/app/index.html` in your web browser
-   or run `client.js` using Node.
+   or run `client/client.js` using Node (`~/node/0/bin/node` on RPi).
 
 
 How to use it
 -------------
+
+Using the web interface:
 
 1. When the _twist to start_ message is spinning, use the ↑↓ arrow keys
    to set the amount of kWh to use.
@@ -41,6 +53,18 @@ How to use it
 
 At any time, the arrow keys can be used to start over with another amount
 of kWh.
+
+In the Node interface, use a mouse wheel and mouse buttons instead.
+
+
+How to set up autorun
+---------------------
+
+    sudo cp ~/git/watt-lite-twist-lite/wltl /etc/init.d/wltl
+    sudo chmod 755 /etc/init.d/wltl
+    sudo update-rc.d wltl defaults
+
+Kill it using `sudo service wltl stop`.
 
 
 Where to find things
@@ -68,14 +92,15 @@ The most interesting JavaScript happens in `static/`:
 - The alternative, static setup in `index_demo.html` can be used for showing
   a static demo, e.g. to take a picture.
 
-The Node client is in `client.js`. It provides a UI to `static/app.js`.
+The Node client is in `client/client.js`. It provides a UI to `static/app.js`.
+Mouse events are gathered using udev in `client/mouse.js`.
 
 
 How to debug
 ------------
 
 Use your browser’s Developer Tools to debug the interface. If you’re
-confident that the sensor measurements work already, set `DRY_RUN = True`
+confident that the sensor measurements work already, set `SOURCE = 'fake'`
 in `config.py` to speed things up.
 
 Check the (real or fake) datastream using

@@ -23,13 +23,24 @@ CIRCLES = {
 # Interval at which to poll the Circles.
 MEASURE_INTERVAL = 1000 # ms
 
-# If true, don't bother with Plugwise and just use random data.
-DRY_RUN = False
+# The source can be 'zway', 'plugwise' or 'fake'.
+SOURCE = 'zway' #'fake'
+
+COLORS = [ # name, rgb (hex), fibaro
+  ['red',    '#ff0000', 3],
+  ['blue',   '#0000ff', 5],
+  ['green',  '#00ff00', 4],
+  ['yellow', '#ffff00', 6],
+  ['purple', '#ff00ff', 8],
+  ['cyan',   '#99cccc', 7],
+  ['white',  '#aaaaaa', 2]
+]
 
 # A configuration JSON object sent to the client.
 CLIENT_CONFIG = {
-  "circles": CIRCLES,
-  "dry_run": DRY_RUN,
+#  "circles": CIRCLES,
+  "colors": COLORS,
+  "dry_run": SOURCE == 'fake',
   "display": {
     "padding": 20,
     "lineWidth": 2,
@@ -46,4 +57,4 @@ CLIENT_CONFIG = {
 
 # Zway 
 ZWAVE_SERVER = 'localhost:8083'
-COLORS = CIRCLES.values()
+ZWAVE_START_FROM = 60 * 60 # seconds before now to use for the first query

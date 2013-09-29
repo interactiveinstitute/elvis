@@ -6,7 +6,6 @@ import time
 import tornado.ioloop
 import tornado.web
 
-from energy_watch_plugwise import EnergyWatch
 import util
 
 class DataHandler(tornado.web.RequestHandler):
@@ -16,7 +15,7 @@ class DataHandler(tornado.web.RequestHandler):
     self.app = app
     self.app.subscribe(TwistApp.Topic.TotalEnergy, self.on_total_energy_update)
     
-    if self.app.config.DRY_RUN: self.closed = False
+    if self.app.config.SOURCE == 'fake': self.closed = False
   
   @tornado.web.asynchronous
   def get(self):
@@ -29,7 +28,7 @@ class DataHandler(tornado.web.RequestHandler):
       self.write('event: init\ndata:\n\n')
       self.flush()
       
-    if self.app.config.DRY_RUN:
+    if self.app.config.SOURCE == 'fake':
       self.start_time = tornado.ioloop.IOLoop.instance().time()
       self.n_sent = 0
       self.random_data = [0 for circle in self.app.config.CIRCLES.keys()]
@@ -38,7 +37,7 @@ class DataHandler(tornado.web.RequestHandler):
     
   def on_connection_close(self):
     self.app.unsubscribe(TwistApp.Topic.TotalEnergy, self.on_total_energy_update)
-    if self.app.config.DRY_RUN: self.closed = True
+    if self.app.config.SOURCE == 'fake': self.closed = True
   
   def on_total_energy_update(self, source, topic, data):
     self.send_energy_data(data)
@@ -90,7 +89,7 @@ class TwistApp(tornado.web.Application, util.Publisher):
     ])
 
     # Call .measure_and_publish periodically if sensor data is used.
-    if not config.DRY_RUN:
+    if config.SOURCE != 'fake':
       self.watch = None
 
       loop = tornado.ioloop.IOLoop.instance()
@@ -100,6 +99,10 @@ class TwistApp(tornado.web.Application, util.Publisher):
 
   def measure_and_publish(self):
     if not self.watch:
+      if self.config.SOURCE == 'plugwise':
+        from energy_watch_plugwise import EnergyWatch
+      elif self.config.SOURCE == 'zway':
+        from energy_watch_zwave import EnergyWatch
       self.watch = EnergyWatch(config)
     self.cached_energy = ['%.10f' % val for val in self.watch.measure()]
     self.publish(TwistApp.Topic.TotalEnergy, self.cached_energy)

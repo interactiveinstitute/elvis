@@ -59,9 +59,9 @@ App.prototype.construct = function(config, canvas, source) {
     cy: this.canvas.height / 2,
     colors: []
   };
-  var i = 0;
-  for (var j in this.config.circles)
-    this.drawUtil.colors[i++] = this.config.circles[j];
+  this.config.colors.forEach(function(values, i) {
+    this.drawUtil.colors[i] = values[1];
+  }, this);
   
   this.measure = this.config.watthour.start;
   
@@ -116,7 +116,7 @@ App.prototype.twist = function(direction) {
   
   this.countdown = setTimeout(function() {
     delete this.firstData;
-    this.used = Object.keys(this.config.circles).map(function() { return 0; });
+    this.used = this.config.colors.map(function() { return 0; });
     this.start = +new Date;
     this.setState(App.STATE.PROGRESS);
   }.bind(this), this.config.countdown);
@@ -145,7 +145,12 @@ App.prototype.draw = function(t) {
   }
   
   var ctx = this.canvas.getContext('2d');
+
   ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+  ctx.fillStyle = 'black';
+  ctx.fill();
+
   this.draw[this.state].bind(this)(ctx, t, this.drawUtil);
 };
 
@@ -161,9 +166,11 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   var size = this.canvas.height / 2 - this.config.display.padding - this.config.display.lineWidth;
   
   ctx.beginPath();
+  ctx.fillStyle = '#000';
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = this.config.display.lineWidth;
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, true);
+  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
+  ctx.fill();
   ctx.stroke();
   
   ctx.save();
@@ -183,7 +190,7 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   
   ctx.beginPath();
   ctx.fillStyle = '#fff';
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, true);
+  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
   ctx.fill();
   
   ctx.save();
@@ -193,7 +200,7 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.measure / 1000, 0, -(size));
+  ctx.fillText('' + (this.measure / 1000), 0, -(size));
   ctx.restore();
 };
 
@@ -205,7 +212,10 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   ctx.beginPath();
   ctx.fillStyle = '#fff';
   ctx.moveTo(u.cx, u.cy);
-  ctx.arc(u.cx, u.cy, size, -.5 * Math.PI, (-.5 + left * 2) * Math.PI, false);
+  if (left == 1)
+    ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
+  else
+    ctx.arc(u.cx, u.cy, size, -.5 * Math.PI, (-.5 + left * 2) * Math.PI, false);
   ctx.closePath();
   ctx.fill();
   
@@ -218,7 +228,7 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(number, 0, -(size));
+  ctx.fillText('' + number, 0, -(size));
   ctx.restore();
 };
 
@@ -235,7 +245,7 @@ App.prototype.draw[App.STATE.PROGRESS_DETAILS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(number, 0, -(size));
+  ctx.fillText('' + number, 0, -(size));
   ctx.restore();
 };
 
@@ -243,9 +253,11 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   var size = this.getSizeForEnergy(this.measure);
   
   ctx.beginPath();
+  ctx.fillStyle = '#000';
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = this.config.display.lineWidth;
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, true);
+  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
+  ctx.fill();
   ctx.stroke();
   
   ctx.save();
@@ -255,7 +267,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.measure / 1000, 0, -(size));
+  ctx.fillText('' + (this.measure / 1000), 0, -(size));
   ctx.restore();
   
   ctx.save();
@@ -316,7 +328,7 @@ App.prototype.draw[App.STATE.FINISHED_DETAILS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.measure / 1000, 0, -(size));
+  ctx.fillText('' + (this.measure / 1000), 0, -(size));
   ctx.restore();
   
   var totalMinutes = (this.end - this.start) / 1000 / 60;
@@ -357,7 +369,10 @@ App.prototype.getSizeForEnergy = function(energy) {
 };
 
 App.prototype.getFont = function(size) {
-  return size + 'pt HelveticaNeue-Bold';
+  //return size + 'pt HelveticaNeue-Bold';
+  return 'bold ' + size + 'pt sans-serif';
 };
 
-// TODO set exports if it exists
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = App;
+}
