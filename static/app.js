@@ -59,9 +59,9 @@ App.prototype.construct = function(config, canvas, source) {
     cy: this.canvas.height / 2,
     colors: []
   };
-  var i = 0;
-  for (var j in this.config.circles)
-    this.drawUtil.colors[i++] = this.config.circles[j];
+  this.config.colors.forEach(function(values, i) {
+    this.drawUtil.colors[i] = values[1];
+  }, this);
   
   this.measure = this.config.watthour.start;
   
@@ -116,7 +116,7 @@ App.prototype.twist = function(direction) {
   
   this.countdown = setTimeout(function() {
     delete this.firstData;
-    this.used = Object.keys(this.config.circles).map(function() { return 0; });
+    this.used = this.config.colors.map(function() { return 0; });
     this.start = +new Date;
     this.setState(App.STATE.PROGRESS);
   }.bind(this), this.config.countdown);

@@ -24,11 +24,22 @@ CIRCLES = {
 MEASURE_INTERVAL = 1000 # ms
 
 # The source can be 'zway', 'plugwise' or 'fake'.
-SOURCE = 'fake'
+SOURCE = 'zway' #'fake'
+
+COLORS = [ # name, rgb (hex), fibaro
+  ['red',    '#ff0000', 3],
+  ['blue',   '#0000ff', 5],
+  ['green',  '#00ff00', 4],
+  ['yellow', '#ffff00', 6],
+  ['purple', '#ff00ff', 8],
+  ['cyan',   '#99cccc', 7],
+  ['white',  '#aaaaaa', 2]
+]
 
 # A configuration JSON object sent to the client.
 CLIENT_CONFIG = {
-  "circles": CIRCLES,
+#  "circles": CIRCLES,
+  "colors": COLORS,
   "dry_run": SOURCE == 'fake',
   "display": {
     "padding": 20,
@@ -46,4 +57,3 @@ CLIENT_CONFIG = {
 
 # Zway 
 ZWAVE_SERVER = 'localhost:8083'
-COLORS = CIRCLES.values()
