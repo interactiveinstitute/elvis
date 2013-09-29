@@ -99,7 +99,10 @@ class TwistApp(tornado.web.Application, util.Publisher):
 
   def measure_and_publish(self):
     if not self.watch:
-      from energy_watch_plugwise import EnergyWatch
+      if self.config.SOURCE == 'plugwise':
+        from energy_watch_plugwise import EnergyWatch
+      elif self.config.SOURCE == 'zway':
+        from energy_watch_zwave import EnergyWatch
       self.watch = EnergyWatch(config)
     self.cached_energy = ['%.10f' % val for val in self.watch.measure()]
     self.publish(TwistApp.Topic.TotalEnergy, self.cached_energy)
