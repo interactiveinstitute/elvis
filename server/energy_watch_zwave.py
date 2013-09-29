@@ -63,9 +63,12 @@ class EnergyWatch(energy_watch.EnergyWatch):
     self.config = config
 
     self.server = self.config.ZWAVE_SERVER
-    self.last_timestamp = int(time.time()) - 60 * 60
-    # TODO find a usable value here: last updateTime minus an hour?
-    #0 #int(time.time()) #1379269331
+
+    self._determine_start_timestamp()
+
+  def _determine_start_timestamp(self):
+    first = json.loads(self._get_data(0))['updateTime']
+    self.last_timestamp = first - self.config.ZWAVE_START_FROM
 
   def _do_http_request(self, path, method='GET'):
     response = None
@@ -87,8 +90,6 @@ class EnergyWatch(energy_watch.EnergyWatch):
 
   def _run(self, command):
     return self._do_http_request('/ZwaveAPI/Run/' + command, 'POST')
-    # Note: GETting commands may become deprecated in the future.
-    # POST was a bit buggy however?
 
   def _get_data(self, since=0):
     return self._do_http_request('/ZwaveAPI/Data/%d' % (since))

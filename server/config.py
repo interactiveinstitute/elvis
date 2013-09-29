@@ -57,3 +57,4 @@ CLIENT_CONFIG = {
 
 # Zway 
 ZWAVE_SERVER = 'localhost:8083'
+ZWAVE_START_FROM = 60 * 60 # seconds before now to use for the first query
