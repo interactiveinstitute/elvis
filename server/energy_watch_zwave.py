@@ -12,7 +12,7 @@ class Plug(object):
     self.W_updateTime = 0
     self.kWh = 0
     self.kWh_updateTime = 0
-    self.color = '#ffffff'
+    self.color = 9
     self.watch = watch
 
   def get_kWh(self):
@@ -38,6 +38,20 @@ class Plug(object):
 
     return kWh
 
+  def _set_option(self, register, value):
+    command = 'devices[%d].Configuration.Set(%d,%d)' % \
+        (self.id, register, value)
+    print 'run:', command
+    self.watch._run(command)
+
+  def update_often(self):
+    self._set_option(42, 5) # update for every 5 % change in W
+    self._set_option(45, 1) # update for every 0.01 kWh
+
+  def set_color(self, color):
+    self.color = color
+    self._set_option(61, color)
+
   def __str__(self):
     return 'plug %s (%s), P = %.2f W, E = %.2f kWh' % \
       (self.id, self.color, self.W, self.kWh)
@@ -58,12 +72,23 @@ class EnergyWatch(energy_watch.EnergyWatch):
     http_client = tornado.httpclient.HTTPClient()
     try:
       url = 'http://%s%s' % (self.server, path)
-      result = http_client.fetch(url, method=method)
+      if method == 'POST':
+        body = ''
+      else:
+        body = None
+      result = http_client.fetch(url, method=method, body=body)
       response = result.body
     except tornado.httpclient.HTTPError as e:
       print 'Error:', e
+    except AssertionError as e:
+      print 'Assertion error:', e
     http_client.close()
     return response
+
+  def _run(self, command):
+    return self._do_http_request('/ZwaveAPI/Run/' + command, 'POST')
+    # Note: GETting commands may become deprecated in the future.
+    # POST was a bit buggy however?
 
   def _get_data(self, since=0):
     return self._do_http_request('/ZwaveAPI/Data/%d' % (since))
@@ -74,8 +99,8 @@ class EnergyWatch(energy_watch.EnergyWatch):
       return results[0]
     else:
       plug = Plug(id, self)
-      plug.color = self.config.COLORS[len(self.plugs)]
-      # TODO set plug LED color
+      plug.set_color(self.config.COLORS[len(self.plugs)][2])
+      plug.update_often()
       self.plugs.append(plug)
       return plug
 
@@ -87,18 +112,18 @@ class EnergyWatch(energy_watch.EnergyWatch):
     for name, value in self.data.iteritems():
       key = name.split('.')
       if key[0] == 'devices' and len(key) > 1 and key[2] == 'instances':
-        id = key[1]
-        instance = key[3]
-        command = key[5]
-        data_id = key[7]
-        scale = value['scaleString']['value']
+        id = int(key[1])
+        instance = int(key[3])
+        command = int(key[5])
+        data_id = int(key[7])
         plug = self._get_or_create_plug(id)
         utime = int(value['updateTime'])
-        if command == '49' or (command == '50' and scale == 'W'): # power
+        if command == 49 or \
+            (command == 50 and value['scaleString']['value'] == 'W'): # power
           if utime > plug.W_updateTime:
             plug.W = float(value['val']['value'])
             plug.W_updateTime = utime
-        elif command == '50' and scale == 'kWh': # energy
+        elif command == 50: # energy
           if utime > plug.kWh_updateTime:
             plug.kWh = float(value['val']['value'])
             plug.kWh_updateTime = utime
