@@ -41,7 +41,7 @@ var Mouse = function() {
         read(function(error, event) {
           console.log(event)
           if (error) throw error;
-          if (event.type == 2 && event.code == 8) {
+          if (event.type == 2 && event.code == 7) {
             me.emit('scroll', event.value);
           } else if (event.type == 1 /* && event.code == 274*/) {
             if (event.value == 1)
