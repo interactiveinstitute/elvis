@@ -10,7 +10,7 @@ var Mouse = function() {
         device.SUBSYSTEM == 'input' &&
         device.ID_INPUT == '1' &&
         device.ID_INPUT_MOUSE == '1') {*/
-      if (device.ID_MODEL == 'Griffin_PowerMate' && device.DEVNAME) {
+      if (device.ID_MODEL == 'Griffin_PowerMate' && device.DEVNAME  && device.ID_INPUT == '1') {
         
       var buffer = new Buffer(16);
       var view = new DataView(buffer);
