@@ -127,8 +127,7 @@ class Plug(object):
     return kWh
 
   def _set_option(self, register, value):
-    #http://sensorserver:8083/ZWaveAPI/Run/devices[4].instances[0].commandClasses[0x70].Set(61,3,1)    
-    command = 'devices[%d].instances[0].commandClasses[0x70].Set(%d,%d,1)' % \
+    command = 'devices[%d].instances[0].commandClasses[112].Set(%d,%d,1)' % \
         (self.id, register, value)
     print 'run:', command
     self.zway.run(command)
