@@ -110,20 +110,22 @@ class Plug(object):
       self.connected = connected
       print self.id, 'connected?', self.connected
 
-  def get_kWh(self):
-    now = time.time()
+  def get_kWh(self, interpolated=True):
+    if interpolated:
+      now = time.time()
 
-    seconds_since_kWh_update = self.zway.last_timestamp - self.kWh_updateTime
-    # Note: a second or less may have went by since self.watch.last_timestamp.
+      seconds_since_kWh_update = self.zway.last_timestamp - self.kWh_updateTime
+      # Note: a second or less may have went by since self.watch.last_timestamp.
 
-    kWh = (self.kWh + \
-           ((float(seconds_since_kWh_update) / 3600.0) * \
-            (float(self.W) / 1000.0)))
-    # Note: this may be inaccurate if the power value changed during the last
-    # seconds_since_kWh_update. It would be more accurate to store intermediate
-    # interpolations on each W update, but for now we just assume that kWh gets
-    # updated often enough to correct the value.
-
+      kWh = (self.kWh + \
+             ((float(seconds_since_kWh_update) / 3600.0) * \
+              (float(self.W) / 1000.0)))
+      # Note: this may be inaccurate if the power value changed during the last
+      # seconds_since_kWh_update. It would be more accurate to store intermediate
+      # interpolations on each W update, but for now we just assume that kWh gets
+      # updated often enough to correct the value.
+    else:
+      kWh = self.kWh
     return kWh
 
   def _set_option(self, register, value):
@@ -188,7 +190,7 @@ class EnergyWatch(energy_watch.EnergyWatch):
 
   def measure(self):
     self.zway.get_updates()
-    return [plug.get_kWh() for plug in self.plugs]
+    return [plug.get_kWh(self.config.ZWAVE_INTERPOLATE) for plug in self.plugs]
 
 if __name__ == '__main__':
   import tornado.ioloop

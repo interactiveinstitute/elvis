@@ -59,4 +59,5 @@ CLIENT_CONFIG = {
 ZWAVE_SERVER = 'localhost:8083'
 ZWAVE_START_FROM = 60 * 60 # seconds before now to use for the first query
 ZWAVE_TRY_IDS = range(2, 12) # device IDs to try contacting
-ZWAVE_REFRESH_INTERVAL = 5000
+ZWAVE_REFRESH_INTERVAL = 1000
+ZWAVE_INTERPOLATE = False
