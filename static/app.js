@@ -133,7 +133,7 @@ App.prototype.toggleDetails = function(show) {
 
 App.prototype.draw = function(t) {
   // On RPi we apparently can’t trust the supplied t.
-  t = +new Date;
+  //t = +new Date;
 
   requestAnimationFrame(this.draw.bind(this));
   
@@ -174,7 +174,7 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
 
   ctx.save();
   ctx.translate(u.cx, u.cy);
-  var angle = map(linear, t, u.t0, 10000, -Math.PI / 4, 7/4 * Math.PI);
+  var angle = map(linear, t, u.t0, u.t0 + 7000, -Math.PI / 4, 7/4 * Math.PI);
   ctx.rotate(angle);
   ctx.font = this.getFont(18);
   ctx.fillStyle = '#fff';
