@@ -1,9 +1,5 @@
 'use strict';
 
-/*
- * TODO keep track of this.resizing{begin, target, time} for animation
- */
-
 var sum = function(a, b) { return a + b; };
 
 var map = function(fn, t, imin, ival, omin, omax) {
@@ -136,6 +132,9 @@ App.prototype.toggleDetails = function(show) {
 };
 
 App.prototype.draw = function(t) {
+  // On RPi we apparently can’t trust the supplied t.
+  t = +new Date;
+
   requestAnimationFrame(this.draw.bind(this));
   
   var changed = this.state != this.previousState;
@@ -163,9 +162,6 @@ App.prototype.draw[App.STATE.INITIALIZING] = function(ctx) {
 };
 
 App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
-  // On RPi we apparently can’t trust the supplied t.
-  t = +new Date;
-
   var size = this.canvas.height / 2 - this.config.display.padding - this.config.display.lineWidth;
   
   ctx.beginPath();
@@ -175,10 +171,10 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
   ctx.fill();
   ctx.stroke();
-  
+
   ctx.save();
   ctx.translate(u.cx, u.cy);
-  var angle = map(linear, t, u.t0, 5000, -Math.PI / 4, 7/4 * Math.PI);
+  var angle = map(linear, t, u.t0, 10000, -Math.PI / 4, 7/4 * Math.PI);
   ctx.rotate(angle);
   ctx.font = this.getFont(18);
   ctx.fillStyle = '#fff';
