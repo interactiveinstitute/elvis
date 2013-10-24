@@ -163,6 +163,9 @@ App.prototype.draw[App.STATE.INITIALIZING] = function(ctx) {
 };
 
 App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
+  // On RPi we apparently can’t trust the supplied t.
+  t = +new Date;
+
   var size = this.canvas.height / 2 - this.config.display.padding - this.config.display.lineWidth;
   
   ctx.beginPath();
