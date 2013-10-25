@@ -84,6 +84,18 @@ App.prototype.construct = function(config, canvas, source) {
       }
     }
   }.bind(this));
+  source.addEventListener('increase', function(event) {
+    this.twist(App.DIRECTION.INCREASE);
+  }.bind(this));
+  source.addEventListener('decrease', function(event) {
+    this.twist(App.DIRECTION.DECREASE);
+  }.bind(this));
+  source.addEventListener('press', function(event) {
+    this.toggleDetails(true);
+  }.bind(this));
+  source.addEventListener('release', function(event) {
+    this.toggleDetails(false);
+  }.bind(this));
 
   this.setState(App.STATE.INITIALIZING);
     
@@ -132,9 +144,6 @@ App.prototype.toggleDetails = function(show) {
 };
 
 App.prototype.draw = function(t) {
-  // On RPi we apparently can’t trust the supplied t.
-  //t = +new Date;
-
   requestAnimationFrame(this.draw.bind(this));
   
   var changed = this.state != this.previousState;

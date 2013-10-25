@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # install dependencies
-sudo apt-get install libudev-dev python-serial
+sudo apt-get install python-serial python-pyudev
 
 # install node
 node_version=0.8.22 # 0.10 and 0.11 don't work

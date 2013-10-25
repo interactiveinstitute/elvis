@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 
+import functools
 import json
+import pyudev
 import random
+import struct
 import time
+import threading
 import tornado.ioloop
 import tornado.web
 
@@ -14,6 +18,7 @@ class DataHandler(tornado.web.RequestHandler):
   def initialize(self, app):
     self.app = app
     self.app.subscribe(TwistApp.Topic.TotalEnergy, self.on_total_energy_update)
+    self.app.subscribe(TwistApp.Topic.UserInput, self.on_user_input)
     
     if self.app.config.SOURCE == 'fake': self.closed = False
   
@@ -41,6 +46,10 @@ class DataHandler(tornado.web.RequestHandler):
   
   def on_total_energy_update(self, source, topic, data):
     self.send_energy_data(data)
+
+  def on_user_input(self, source, topic, event):
+    self.write('event: %s\ndata: 0\n\n' % event)
+    self.flush()
     
   def send_energy_data(self, data):
     self.write('event: energydata\ndata: %s\n\n' % json.dumps(data))
@@ -76,11 +85,11 @@ class TwistApp(tornado.web.Application, util.Publisher):
   # Topics that TwistApp may publish about. Currently only contais TotalEnergy, which is used by DataHandler instances to receive updates.
   class Topic:
     TotalEnergy = 1
+    UserInput = 2
 
-  cached_energy = None
-  
   def __init__(self, config):
     self.config = config
+    self.cached_energy = None
     
     tornado.web.Application.__init__(self, [
       (r'/app/(.*)', tornado.web.StaticFileHandler, { 'path': '../static' }),
@@ -88,14 +97,66 @@ class TwistApp(tornado.web.Application, util.Publisher):
       (r'/config', JsonHandler, { 'json': config.CLIENT_CONFIG }),
     ])
 
+    loop = tornado.ioloop.IOLoop.instance()
+    self.setup_input()
+    if self.input_device:
+      self.thread = threading.Thread(target=self.read_input, args=(self.on_input,))
+      self.thread.daemon = True
+      self.thread.start()
+    else:
+      print 'no input device'
+
     # Call .measure_and_publish periodically if sensor data is used.
     if config.SOURCE != 'fake':
       self.watch = None
 
-      loop = tornado.ioloop.IOLoop.instance()
       tornado.ioloop.PeriodicCallback(self.measure_and_publish, config.MEASURE_INTERVAL, loop).start()
 
     self.listen(config.HTTP_PORT, '0.0.0.0')
+
+  def setup_input(self):
+    context = pyudev.Context()
+
+    self.input_device = None
+    self.is_powermate = False
+    for device in context.list_devices(subsystem='input'):
+      is_powermate = device.get('ID_MODEL') == 'Griffin_PowerMate'
+      if ('event' in str(device.get('DEVNAME')) and device.get('ID_INPUT') == '1' and device.get('ID_INPUT_MOUSE') == '1') or \
+          (is_powermate and device.get('DEVNAME') and device.get('ID_INPUT') == '1'):
+        self.input_device = device
+        self.is_powermate = is_powermate
+
+  def read_input(self, callback):
+    # Event handling code from http://stackoverflow.com/questions/5060710
+
+    # long int, long int, unsigned short, unsigned short, unsigned int
+    FORMAT = 'llHHl'
+    EVENT_SIZE = struct.calcsize(FORMAT)
+
+    in_file = open(self.input_device.get('DEVNAME'), "rb")
+
+    event = in_file.read(EVENT_SIZE)
+
+    while event:
+      (tv_sec, tv_usec, type, code, value) = struct.unpack(FORMAT, event)
+
+      if type == 2 and ((code == 8 and not self.is_powermate) or (code == 7 and self.is_powermate)):
+        if value == 1:
+          tornado.ioloop.IOLoop.instance().add_callback(functools.partial(callback, 'increase'))
+        else:
+          tornado.ioloop.IOLoop.instance().add_callback(functools.partial(callback, 'decrease'))
+      elif type == 1:
+        if value == 1:
+          tornado.ioloop.IOLoop.instance().add_callback(functools.partial(callback, 'press'))
+        else:
+          tornado.ioloop.IOLoop.instance().add_callback(functools.partial(callback, 'release'))
+
+      event = in_file.read(EVENT_SIZE)
+
+    in_file.close()
+
+  def on_input(self, event):
+    self.publish(TwistApp.Topic.UserInput, event)
 
   def measure_and_publish(self):
     if not self.watch:
