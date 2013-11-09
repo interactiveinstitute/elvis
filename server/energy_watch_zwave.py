@@ -1,63 +1,16 @@
-import json
-import time
+import functools
 import tornado
-import tornado.httpclient
 
 import energy_watch
 from pubsub import PubSub
+from zway import ZWay
 
-class ZWay(PubSub):
-  def __init__(self, server):
-    super(ZWay, self).__init__()
-
-    self.server = server
-    self.last_timestamp = 0
-    self.devices = {}
-
-  def start(self):
-    self.get_updates()
-
-  def run(self, command):
-    return self._do_http_request('/ZwaveAPI/Run/' + command, 'POST')
-
-  def get_data(self, since=0):
-    return self._do_http_request('/ZwaveAPI/Data/%d' % (since))
-
-  def get_updates(self):
-    data = json.loads(self.get_data(self.last_timestamp))
-    self.last_timestamp = int(data['updateTime'])
-    self.last_own_timestamp = time.time()
-
-    for key, data in data.iteritems():
-      if key == 'devices':
-        self.devices = data
-      self.publish(data, key)
-
-  def _do_http_request(self, path, method='GET'):
-    response = None
-    http_client = tornado.httpclient.HTTPClient()
-    try:
-      url = 'http://%s%s' % (self.server, path)
-      if method == 'POST':
-        body = ''
-      else:
-        body = None
-      result = http_client.fetch(url, method=method, body=body)
-      response = result.body
-    except tornado.httpclient.HTTPError as e:
-      print 'Error:', e
-    except AssertionError as e:
-      print 'Assertion error:', e
-    http_client.close()
-    return response
-
-class Plug(object):
+class Plug(PubSub):
   def __init__(self, id, zway):
+    super(Plug, self).__init__()
+
     self.id = id
     self.W = 0
-    self.W_updateTime = 0
-    self.kWh = 0
-    self.kWh_updateTime = 0
     self.color = 9
     self.zway = zway
     self.connected = None
@@ -65,46 +18,23 @@ class Plug(object):
 
     self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
     self.zway.subscribe(self.on_power_update, 'devices.%d.instances.0.commandClasses.49.data.4' % id)
-    self.zway.subscribe(self.on_power_update, 'devices.%d.instances.0.commandClasses.50.data.2' % id)
-    self.zway.subscribe(self.on_energy_update, 'devices.%d.instances.0.commandClasses.50.data.0' % id)
     self.zway.subscribe(self.on_connection_update, 'devices.%d.instances.0.commandClasses.37.data.level' % id)
 
   def on_power_update(self, data, key):
     self.W = float(data['val']['value'])
-    self.W_updateTime = int(data['updateTime'])
-
-  def on_energy_update(self, data, key):
-    self.kWh = float(data['val']['value'])
-    self.kWh_updateTime = int(data['updateTime'])
+    self.publish()
 
   def on_fail_update(self, data, key):
     self.set_connected(not data['value'])
 
   def on_connection_update(self, data, key):
     self.set_connected(data['value'] > 0)
+    self.publish()
 
   def set_connected(self, connected):
     if connected != self.connected:
       self.connected = connected
       print self.id, 'connected?', self.connected
-
-  def get_kWh(self, interpolated=True):
-    if interpolated:
-      now = time.time()
-
-      seconds_since_kWh_update = self.zway.last_timestamp - self.kWh_updateTime
-      # Note: a second or less may have went by since self.watch.last_timestamp.
-
-      kWh = (self.kWh + \
-             ((float(seconds_since_kWh_update) / 3600.0) * \
-              (float(self.W) / 1000.0)))
-      # Note: this may be inaccurate if the power value changed during the last
-      # seconds_since_kWh_update. It would be more accurate to store intermediate
-      # interpolations on each W update, but for now we just assume that kWh gets
-      # updated often enough to correct the value.
-    else:
-      kWh = self.kWh
-    return kWh
 
   def _set_option(self, register, value):
     command = 'devices[%d].instances[0].commandClasses[112].Set(%d,%d,1)' % \
@@ -112,36 +42,47 @@ class Plug(object):
     print 'run:', command
     self.zway.run(command)
 
-  def update_often(self):
-    return
-    self._set_option(42, 5) # update for every 5 % change in W
-    self._set_option(45, 1) # update for every 0.01 kWh
+  def configure(self):
+    self._set_option(40, 1) # report power changes immediately starting at 1 %
+    self._set_option(42, 1) # report standard power changes starting at 1 %
+    self._set_option(43, 255) # send reports only when polling
+    self._set_option(47, 3600) # send unrecorded power reports every hour
+    self._set_option(52, 0) # don't turn on or off devices
 
   def _refresh(self, command_class):
     self.zway.run('devices[%d].instances[0].commandClasses[%d].Get()' % (self.id, command_class))
   def refresh_power(self): self._refresh(49) 
-  def refresh_energy(self): self._refresh(50)
 
   def set_color(self, color):
     self.color = color
     self._set_option(61, color)
+    self._set_option(62, color)
+    self._set_option(63, color)
 
   def __str__(self):
-    return 'plug %s (%s), P = %.2f W, E = %.2f kWh' % \
-      (self.id, self.color, self.W, self.kWh)
+    return 'plug %s (%s), P = %.2f W' % (self.id, self.color, self.W)
 
 class EnergyWatch(energy_watch.EnergyWatch):
-  plugs = []
-
-  def __init__(self, config):
+  def __init__(self, config, callback):
     self.config = config
+    self.callback = callback
+
+    self.plugs = []
 
     self.zway = ZWay(config.ZWAVE_SERVER)
     self.zway.subscribe(self.update_devices, 'devices')
     self.zway.start()
 
-    loop = tornado.ioloop.IOLoop.instance()
-    tornado.ioloop.PeriodicCallback(self.refresh_all_plugs, config.ZWAVE_REFRESH_INTERVAL, loop).start()
+    self.values = []
+
+  def trigger(self, data=None, key=None):
+    old_values = self.values
+    self.values = [plug.W for plug in self.plugs]
+    if old_values != self.values:
+      self.call_back()
+
+  def call_back(self):
+    self.callback([plug.W for plug in self.plugs])
 
   def update_devices(self, devices, key):
     def is_plug(info):
@@ -149,11 +90,6 @@ class EnergyWatch(energy_watch.EnergyWatch):
     for id, info in devices.iteritems():
       if is_plug(info):
         self._get_or_create_plug(int(id))
-    self.refresh_all_plugs()
-
-  def refresh_all_plugs(self):
-    for plug in self.plugs:
-      plug.refresh_energy()
 
   def _get_or_create_plug(self, id):
     results = [plug for plug in self.plugs if plug.id == id]
@@ -162,26 +98,25 @@ class EnergyWatch(energy_watch.EnergyWatch):
     else:
       plug = Plug(id, self.zway)
       plug.set_color(self.config.COLORS[len(self.plugs)][2])
-      plug.update_often()
+      plug.configure()
+      plug.refresh_power()
+      plug.subscribe(self.trigger)
       self.plugs.append(plug)
       return plug
-
-  def measure(self):
-    self.zway.get_updates()
-    return [plug.get_kWh(self.config.ZWAVE_INTERPOLATE) for plug in self.plugs]
 
 if __name__ == '__main__':
   import tornado.ioloop
 
   import config
 
-  watch = EnergyWatch(config)
+  def debug(power):
+    print power
 
-  def debug():
-    print ['%.10f' % val for val in watch.measure()]
+  watch = EnergyWatch(config, debug)
+
+  watch.call_back()
 
   loop = tornado.ioloop.IOLoop.instance()
-  tornado.ioloop.PeriodicCallback(debug, config.MEASURE_INTERVAL, loop).start()
 
   try: loop.start()
   except KeyboardInterrupt: print

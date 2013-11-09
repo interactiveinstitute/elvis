@@ -21,7 +21,7 @@ CIRCLES = {
 }
 
 # Interval at which to poll the Circles.
-MEASURE_INTERVAL = 1000 # ms
+MEASURE_INTERVAL = 50 # ms
 
 # The source can be 'zway', 'plugwise' or 'fake'.
 SOURCE = 'zway' #'fake'
