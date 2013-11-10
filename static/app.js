@@ -60,27 +60,29 @@ App.prototype.construct = function(config, canvas, source) {
   }, this);
   
   this.measure = this.config.watthour.start;
+
+  this.watts = [];
+  this.used = [];
+  this.lastUsedUpdate = 0;
   
   source.addEventListener('init', function(event) {
     this.setState(App.STATE.INTRO);
   }.bind(this));
-  source.addEventListener('energydata', function(event) {
+  source.addEventListener('powerdata', function(event) {
+    var data = JSON.parse(event.data).map(parseFloat);
+    this.watts = data;
+
     if (this.state == App.STATE.INITIALIZING) this.setState(App.STATE.INTRO);
     
-    var data = JSON.parse(event.data).map(parseFloat).map(function(kWh) { return kWh * 1000; });
     if (this.state == App.STATE.PROGRESS || this.state == App.STATE.PROGRESS_DETAILS) {
-      if (this.firstData) {
-        this.used = data.map(function(Wh, i) { return Wh - this.firstData[i]; }.bind(this));
-        var total = this.used.reduce(sum);
-        console.log(this.used, this.firstData, total);
-        if (total > this.measure) {
-          var factor = this.measure / total;
-          this.used = this.used.map(function(Wh) { return Wh * factor; });
-          this.end = +new Date;
-          this.setState(App.STATE.FINISHED);
-        }
-      } else {
-        this.firstData = data;
+      this.updateUsed();
+
+      var total = this.used.reduce(sum);
+      if (total > this.measure) {
+        var factor = this.measure / total;
+        this.used = this.used.map(function(Wh) { return Wh * factor; });
+        this.end = +new Date;
+        this.setState(App.STATE.FINISHED);
       }
     }
   }.bind(this));
@@ -100,6 +102,21 @@ App.prototype.construct = function(config, canvas, source) {
   this.setState(App.STATE.INITIALIZING);
     
   this.draw();
+};
+
+App.prototype.updateUsed = function() {
+  if (this.lastUsedUpdate == 0) {
+    this.lastUsedUpdate = +new Date;
+  } else {
+    var now = +new Date;
+    var millis = now - this.lastUsedUpdate;
+    var watts = this.watts;
+    for (var i = 0; i < this.watts.length; i++) {
+      var add = watts[i] / 1000.0 / 3600.0;
+      this.used[i] = (this.used[i] || 0) + add;
+    }
+    this.lastUsedUpdate = now;
+  }
 };
 
 App.prototype.setState = function(state) {
@@ -213,6 +230,8 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
 };
 
 App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
+  this.updateUsed();
+
   var size = this.getSizeForEnergy(this.measure);
 
   var left = (this.measure - this.used.reduce(sum)) / this.measure;
@@ -241,6 +260,8 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
 };
 
 App.prototype.draw[App.STATE.PROGRESS_DETAILS] = function(ctx, t, u) {
+  this.updateUsed();
+
   var size = this.getSizeForEnergy(this.measure);
   var number = Math.round(this.used.reduce(sum) / 1000 * 10) / 10;
   
