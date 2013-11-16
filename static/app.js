@@ -76,14 +76,6 @@ App.prototype.construct = function(config, canvas, source) {
     
     if (this.state == App.STATE.PROGRESS || this.state == App.STATE.PROGRESS_DETAILS) {
       this.updateUsed();
-
-      var total = this.used.reduce(sum);
-      if (total > this.measure) {
-        var factor = this.measure / total;
-        this.used = this.used.map(function(Wh) { return Wh * factor; });
-        this.end = +new Date;
-        this.setState(App.STATE.FINISHED);
-      }
     }
   }.bind(this));
   source.addEventListener('increase', function(event) {
@@ -121,6 +113,14 @@ App.prototype.updateUsed = function() {
       this.used[i] = (this.used[i] || 0) + add;
     }
     this.lastUsedUpdate = now;
+
+    var total = this.used.reduce(sum);
+    if (total > this.measure) {
+      var factor = this.measure / total;
+      this.used = this.used.map(function(Wh) { return Wh * factor; });
+      this.end = +new Date;
+      this.setState(App.STATE.FINISHED);
+    }
   }
 };
 
