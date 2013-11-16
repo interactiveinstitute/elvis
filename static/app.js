@@ -104,6 +104,11 @@ App.prototype.construct = function(config, canvas, source) {
   this.draw();
 };
 
+App.prototype.round = function(Wh) {
+  var rounded = Math.round(Wh * 10) / 10;
+  return Math.floor(rounded) + '.' + (rounded % 1 * 10);
+};
+
 App.prototype.updateUsed = function() {
   if (this.lastUsedUpdate == 0) {
     this.lastUsedUpdate = +new Date;
@@ -225,7 +230,7 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('' + (this.measure / 1000), 0, -(size));
+  ctx.fillText(this.round(this.measure), 0, -(size));
   ctx.restore();
 };
 
@@ -246,8 +251,6 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   ctx.closePath();
   ctx.fill();
   
-  var number = Math.round((this.measure - this.used.reduce(sum)) / 1000 * 10) / 10;
-  
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(Math.PI / 4)
@@ -255,7 +258,7 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('' + number, 0, -(size));
+  ctx.fillText(this.round(this.measure - this.used.reduce(sum)), 0, -(size));
   ctx.restore();
 };
 
@@ -263,8 +266,7 @@ App.prototype.draw[App.STATE.PROGRESS_DETAILS] = function(ctx, t, u) {
   this.updateUsed();
 
   var size = this.getSizeForEnergy(this.measure);
-  var number = Math.round(this.used.reduce(sum) / 1000 * 10) / 10;
-  
+
   this.drawSlices(ctx, t, u, size);
   
   ctx.save();
@@ -274,7 +276,7 @@ App.prototype.draw[App.STATE.PROGRESS_DETAILS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('' + number, 0, -(size));
+  ctx.fillText(this.round(this.used.reduce(sum)), 0, -(size));
   ctx.restore();
 };
 
@@ -296,7 +298,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('' + (this.measure / 1000), 0, -(size));
+  ctx.fillText(this.round(this.measure), 0, -(size));
   ctx.restore();
   
   ctx.save();
@@ -306,7 +308,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.font = this.getFont(10);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('kWh', 0, -(size) + 20);
+  ctx.fillText('Wh', 0, -(size) + 20);
   ctx.restore();
   
   var totalMinutes = (this.end - this.start) / 1000 / 60;
@@ -357,7 +359,7 @@ App.prototype.draw[App.STATE.FINISHED_DETAILS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('' + (this.measure / 1000), 0, -(size));
+  ctx.fillText(this.round(this.measure), 0, -(size));
   ctx.restore();
   
   var totalMinutes = (this.end - this.start) / 1000 / 60;

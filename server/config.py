@@ -47,10 +47,10 @@ CLIENT_CONFIG = {
     "minSize": .5
   },
   "watthour": {
-    "min": 10,
-    "max": 10000,
+    "min": 1,
+    "max": 1000,
     "start": 0,
-    "step": 10
+    "step": 1
   },
   "countdown": 100
 }
