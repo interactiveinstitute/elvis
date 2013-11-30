@@ -24,7 +24,8 @@ CIRCLES = {
 MEASURE_INTERVAL = 50 # ms
 
 # The source can be 'zway', 'plugwise' or 'fake'.
-SOURCE = 'zway' #'fake'
+SOURCE = 'zway'
+#SOURCE = 'fake'
 
 COLORS = [ # name, rgb (hex), fibaro
   ['red',    '#ff0000', 3],
@@ -52,7 +53,11 @@ CLIENT_CONFIG = {
     "start": 0,
     "step": 1
   },
-  "countdown": 100
+  "countdown": 100,
+  "resetTiming": {
+    "waitSeconds": 3,
+    "appearMs": 200
+  },
 }
 
 # Zway 

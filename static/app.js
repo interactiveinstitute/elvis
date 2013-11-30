@@ -11,6 +11,11 @@ var easeInOutCubic = function(t) {
   return t < .5 ? 4*t*t*t*t : (t-1)*(2*t-2)*(2*t-2)+1;
 };
 
+var easeOutQuart = function(t) {
+  // Based on https://gist.github.com/gre/1650294
+  return 1-(--t)*t*t*t;
+};
+
 var easeInOutCirc = function(t) {
   // Based on http://www.gizma.com/easing/
   return t < .5 ? -.5 * (Math.sqrt(1 - 4 * t*t) - 1) : .5 * (Math.sqrt(1 - (t*2-2)*(t*2-2)) + 1);
@@ -34,7 +39,8 @@ App.STATE = {
   INTRO: 2,
   WINDING: 3,
   PROGRESS: 4,
-  FINISHED: 5
+  FINISHED: 5,
+  RESETTING: 6
 };
 
 App.DIRECTION = {
@@ -71,7 +77,9 @@ App.prototype.construct = function(config, canvas, source) {
     this.watts = data;
 
     if (this.state == App.STATE.INITIALIZING) this.setState(App.STATE.INTRO);
-    if (this.state == App.STATE.PROGRESS) this.updateUsed();
+    if (this.state == App.STATE.PROGRESS ||
+        (this.state == App.STATE.RESETTING &&
+         this.preResetState == App.STATE.PROGRESS)) this.updateUsed();
   }.bind(this));
   source.addEventListener('increase', function(event) {
     this.twist(App.DIRECTION.INCREASE);
@@ -148,9 +156,16 @@ App.prototype.twist = function(direction) {
 };
 
 App.prototype.startResetting = function() {
+  if ((this.state == App.STATE.PROGRESS) ||
+      (this.state == App.STATE.FINISHED)) {
+    this.preResetState = this.state;
+    this.setState(App.STATE.RESETTING);
+  }
 };
 
 App.prototype.stopResetting = function() {
+  if (this.state == App.STATE.RESETTING)
+    this.setState(this.preResetState);
 };
 
 App.prototype.draw = function(t) {
@@ -200,6 +215,56 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('twist to start', 0, u.height / 2 - 3 * 18);
+  ctx.restore();
+};
+
+App.prototype.draw[App.STATE.RESETTING] = function(ctx, t, u) {
+  var elapsed = t - u.t0;
+  var seconds = this.config.resetTiming.waitSeconds;
+  var ms = seconds * 1000;
+
+  if (elapsed >= ms) {
+    this.setState(App.STATE.INTRO);
+    return;
+  }
+
+  this.draw[this.preResetState].bind(this)(ctx, t, u);
+
+  var appear = this.config.resetTiming.appearMs;
+  var scale1 = (elapsed > appear) ? 1 : map(easeOutQuart, elapsed, 0, appear, 0, 1);
+  var inner = 50;
+  var size = this.getSizeForEnergy(this.measure || this.config.watthour.max);
+  var perCircle = size / seconds;
+
+  ctx.save();
+  ctx.translate(u.cx, u.cy);
+  ctx.scale(scale1, scale1);
+
+  var radius = Math.max(inner, (Math.floor(elapsed / 1000) + map(easeOutQuart, elapsed, 0, 1000, 0, 1)) * perCircle);
+  ctx.beginPath();
+  ctx.fillStyle = '#000';
+  ctx.lineWidth = this.config.display.lineWidth;
+  ctx.arc(0, 0, radius, 0, 2 * Math.PI, false);
+  ctx.fill();
+
+  for (var i = 0; i < seconds; i++) {
+    ctx.beginPath();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = this.config.display.lineWidth;
+    ctx.arc(0, 0, i * perCircle, 0, 2 * Math.PI, false);
+    ctx.stroke();
+  }
+
+  if (elapsed > ms - appear) {
+    var scale2 = map(easeOutQuart, elapsed - appear, 0, appear, 1, 0);
+    ctx.scale(scale2, scale2);
+  }
+  ctx.font = this.getFont(18);
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('reset?', 0, 0);
+
   ctx.restore();
 };
 
@@ -301,16 +366,6 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillText('hours', 0, -(size) + 20);
-  ctx.restore();
-  
-  ctx.save();
-  ctx.translate(u.cx, u.cy);
-  ctx.rotate(7 * Math.PI / 4)
-  ctx.fillStyle = '#000';
-  ctx.font = this.getFont(10);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText('twist', 0, -(size) + 20);
   ctx.restore();
 };
 
