@@ -123,6 +123,11 @@ App.prototype.round = function(Wh) {
   return Math.floor(rounded) + '.' + Math.round(rounded % 1 * 10);
 };
 
+App.prototype.gray = function(opacity) {
+  var color = opacity ? Math.round(255 * opacity) : 0;
+  return 'rgb(' + color + ', ' + color + ', ' + color + ')';
+};
+
 App.prototype.updateUsed = function() {
   if (this.lastUsedUpdate == 0) {
     this.lastUsedUpdate = +new Date;
@@ -223,27 +228,35 @@ App.prototype.draw = function(t) {
   this.draw[this.state].bind(this)(ctx, t, this.drawUtil);
 };
 
-App.prototype.draw[App.STATE.INITIALIZING] = function(ctx) {
-  ctx.font = this.getFont(18);
-  ctx.fillStyle = '#fff';
+App.prototype.draw[App.STATE.INITIALIZING] = function(ctx, t, u) {
+  ctx.font = this.getFont(10);
+  var opacity = (t - u.t0) / 1000;
+  ctx.fillStyle = this.gray(Math.min(1, opacity));
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('initializing…', this.canvas.width / 2, this.canvas.height / 2);
+  ctx.fillText('initialising…', u.cx, u.cy);
 };
 
 App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
+  var duration = this.config.startAnimation.duration;
+  if (!this.measure && t - u.t0 < duration) {
+    var scale = map(easeOutElastic, t - u.t0, 0, duration, 0, 1);
+  } else var scale = 1;
+
   var size = this.getSizeForEnergy(this.measure || this.config.watthour.min);
+
+  ctx.save();
+  ctx.translate(u.cx, u.cy);
+  ctx.scale(scale, scale);
   
   ctx.beginPath();
   ctx.fillStyle = '#000';
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = this.config.display.lineWidth;
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
+  ctx.arc(0, 0, size, 0, 2 * Math.PI, false);
   ctx.fill();
   ctx.stroke();
 
-  ctx.save();
-  ctx.translate(u.cx, u.cy);
   var angle = map(linear, t, u.t0, u.t0 + 7000, -Math.PI / 4, 7/4 * Math.PI);
   ctx.rotate(angle);
   ctx.font = this.getFont(18);
@@ -253,6 +266,7 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   ctx.fillText('twist', 0, size - 2 * 18);
   ctx.font = this.getFont(10);
   ctx.fillText('to set Wh', 0, size - 1 * 18);
+
   ctx.restore();
 };
 
