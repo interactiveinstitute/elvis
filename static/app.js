@@ -101,7 +101,7 @@ App.prototype.construct = function(config, canvas, source) {
 
 App.prototype.round = function(Wh) {
   var rounded = Math.round(Wh * 10) / 10;
-  return Math.floor(rounded) + '.' + (rounded % 1 * 10);
+  return Math.floor(rounded) + '.' + Math.round(rounded % 1 * 10);
 };
 
 App.prototype.updateUsed = function() {
@@ -150,7 +150,7 @@ App.prototype.twist = function(direction) {
   this.countdown = setTimeout(function() {
     delete this.firstData;
     this.used = this.config.colors.map(function() { return 0; });
-    this.start = +new Date;
+    this.start = +new Date;/
     this.setState(App.STATE.PROGRESS);
   }.bind(this), this.config.countdown);
 };
