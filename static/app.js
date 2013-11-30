@@ -21,6 +21,25 @@ var easeInOutCirc = function(t) {
   return t < .5 ? -.5 * (Math.sqrt(1 - 4 * t*t) - 1) : .5 * (Math.sqrt(1 - (t*2-2)*(t*2-2)) + 1);
 };
 
+var easeOutElastic = function(t, b, c, d, a, p) {
+  // Based on http://www.dzone.com/snippets/robert-penner-easing-equations
+  b = 0; // beginning value
+  c = 1; // change in value
+  d = 1; // duration
+  a = 1; // amplitude
+  p = .3; // period
+ 
+  if (t == 0) return b;
+  if ((t /= d) == 1) return b + c;
+  if (!p) p = d * .3;
+  if (a < Math.abs(c)) {
+    a = c;
+    var s = p / 4;
+  } else
+    var s = p / ( 2 * Math.PI) * Math.asin(c / a);
+  return a * Math.pow(2, -10 * t) * Math.sin((t * d - s) * (2 * Math.PI) / p) + c + b;
+};
+
 var linear = function(t) { return t; };
 
 var App = function() {
@@ -88,10 +107,10 @@ App.prototype.construct = function(config, canvas, source) {
     this.twist(App.DIRECTION.DECREASE);
   }.bind(this));
   source.addEventListener('press', function(event) {
-    this.startResetting();
+    this.onButtonDown();
   }.bind(this));
   source.addEventListener('release', function(event) {
-    this.stopResetting();
+    this.onButtonUp();
   }.bind(this));
 
   this.setState(App.STATE.INITIALIZING);
@@ -136,6 +155,12 @@ App.prototype.setState = function(state) {
 };
 
 App.prototype.twist = function(direction) {
+  if (this.state == App.STATE.INTRO) {
+    this.buttonPressed = 0;
+    this.setState(App.STATE.WINDING);
+  }
+  if (this.state != App.STATE.WINDING) return;
+
   if (direction == App.DIRECTION.DECREASE) var factor = -1;
   else if (direction == App.DIRECTION.INCREASE) var factor = 1;
   
@@ -144,28 +169,39 @@ App.prototype.twist = function(direction) {
   this.measure += factor * this.config.watthour.step;
   if (this.measure < this.config.watthour.min) this.measure = this.config.watthour.min;
   if (this.measure > this.config.watthour.max) this.measure = this.config.watthour.max;
-  
-  if (this.state != App.STATE.WINDING) this.setState(App.STATE.WINDING);
-  
-  this.countdown = setTimeout(function() {
-    delete this.firstData;
-    this.used = this.config.colors.map(function() { return 0; });
-    this.start = +new Date;
-    this.setState(App.STATE.PROGRESS);
-  }.bind(this), this.config.countdown);
 };
 
-App.prototype.startResetting = function() {
-  if ((this.state == App.STATE.PROGRESS) ||
-      (this.state == App.STATE.FINISHED)) {
-    this.preResetState = this.state;
-    this.setState(App.STATE.RESETTING);
+App.prototype.onButtonDown = function() {
+  switch (this.state) {
+    case App.STATE.PROGRESS:
+    case App.STATE.FINISHED:
+      this.startResetting();
+      break;
+    case App.STATE.WINDING:
+      if (!this.buttonPressed) this.buttonPressed = +new Date;
   }
 };
 
+App.prototype.onButtonUp = function() {
+  switch (this.state) {
+    case App.STATE.RESETTING:
+      this.stopResetting();
+      break;
+    case App.STATE.WINDING:
+      delete this.firstData;
+      this.used = this.config.colors.map(function() { return 0; });
+      this.start = +new Date;
+      this.setState(App.STATE.PROGRESS);
+  }
+};
+
+App.prototype.startResetting = function() {
+  this.preResetState = this.state;
+  this.setState(App.STATE.RESETTING);
+};
+
 App.prototype.stopResetting = function() {
-  if (this.state == App.STATE.RESETTING)
-    this.setState(this.preResetState);
+  this.setState(this.preResetState);
 };
 
 App.prototype.draw = function(t) {
@@ -196,10 +232,7 @@ App.prototype.draw[App.STATE.INITIALIZING] = function(ctx) {
 };
 
 App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
-  if (this.measure)
-    var size = this.getSizeForEnergy(this.measure);
-  else
-    var size = this.canvas.height / 2 - this.config.display.padding - this.config.display.lineWidth;
+  var size = this.getSizeForEnergy(this.measure || this.config.watthour.min);
   
   ctx.beginPath();
   ctx.fillStyle = '#000';
@@ -217,7 +250,9 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('twist to start', 0, u.height / 2 - 3 * 18);
+  ctx.fillText('twist', 0, size - 2 * 18);
+  ctx.font = this.getFont(10);
+  ctx.fillText('to set Wh', 0, size - 1 * 18);
   ctx.restore();
 };
 
@@ -243,15 +278,6 @@ App.prototype.draw[App.STATE.RESETTING] = function(ctx, t, u) {
   ctx.translate(u.cx, u.cy);
   ctx.scale(scale1, scale1);
 
-  var radius = Math.max(inner, (Math.floor(elapsed / 1000) + map(easeOutQuart, elapsed, 0, 1000, 0, 1)) * perCircle);
-  ctx.beginPath();
-  ctx.fillStyle = '#000';
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = this.config.display.lineWidth;
-  ctx.arc(0, 0, radius, 0, 2 * Math.PI, false);
-  ctx.fill();
-  ctx.stroke();
-
   for (var i = 0; i < seconds; i++) {
     ctx.beginPath();
     ctx.strokeStyle = '#000';
@@ -260,8 +286,17 @@ App.prototype.draw[App.STATE.RESETTING] = function(ctx, t, u) {
     ctx.stroke();
   }
 
+  var radius = Math.max(inner, (Math.floor(elapsed / 1000) + map(/*easeOutQuart*/ easeOutElastic, elapsed, 0, 1000, 0, 1)) * perCircle);
+  ctx.beginPath();
+  ctx.fillStyle = '#000';
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = this.config.display.lineWidth;
+  ctx.arc(0, 0, radius, 0, 2 * Math.PI, false);
+  ctx.fill();
+  ctx.stroke();
+
   if (elapsed > ms - appear) {
-    var scale2 = map(easeOutQuart, elapsed - appear, 0, appear, 1, 0);
+    var scale2 = map(/*easeOutQuart*/ easeOutElastic, elapsed - appear, 0, appear, 1, 0);
     ctx.scale(scale2, scale2);
   }
   ctx.font = this.getFont(18);
@@ -275,20 +310,30 @@ App.prototype.draw[App.STATE.RESETTING] = function(ctx, t, u) {
 
 App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   var size = this.getSizeForEnergy(this.measure);
-  
-  ctx.beginPath();
-  ctx.fillStyle = '#fff';
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
-  ctx.fill();
-  
+  var dt = new Date - this.buttonPressed;
+  var duration = this.config.startAnimation.duration;
+  var max = this.config.startAnimation.scale;
+  if (0 <= dt && dt < duration)
+    var scale = map(easeOutElastic, dt, 0, duration, 1, max);
+  else
+    var scale = max;
+
   ctx.save();
   ctx.translate(u.cx, u.cy);
+  ctx.scale(scale, scale);
+
+  ctx.beginPath();
+  ctx.fillStyle = '#fff';
+  ctx.arc(0, 0, size, 0, 2 * Math.PI, false);
+  ctx.fill();
+  
   ctx.rotate(Math.PI / 4)
   ctx.fillStyle = '#fff';
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillText(this.round(this.measure), 0, -(size));
+
   ctx.restore();
 };
 
@@ -296,30 +341,46 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   this.updateUsed();
 
   var size = this.getSizeForEnergy(this.measure);
-
   var left = (this.measure - this.used.reduce(sum)) / this.measure;
+
+  var duration = this.config.startAnimation.duration;
+  var max = this.config.startAnimation.scale;
+  var dt = new Date - this.start;
+  if (0 <= dt && dt < duration)
+    var scale = map(easeOutElastic, dt, 0, duration, max, 1);
+  else
+    var scale = 1;
+
+  ctx.save();
+  ctx.translate(u.cx, u.cy);
+  ctx.scale(scale, scale);
   
   ctx.beginPath();
   ctx.fillStyle = '#fff';
-  ctx.moveTo(u.cx, u.cy);
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
+  ctx.moveTo(0, 0);
+  ctx.arc(0, 0, size, 0, 2 * Math.PI, false);
   ctx.closePath();
   ctx.fill();
+
+  ctx.restore();
 
   this.drawSlices(ctx, t, u, size);
 
   var left = this.round(this.measure - this.used.reduce(sum));
   var total = this.round(this.measure);
   var text = left + ' of ' + total + ' Wh left';
-  
+
   ctx.save();
   ctx.translate(u.cx, u.cy);
+  ctx.scale(scale, scale);
+  
   ctx.rotate(Math.PI / 4)
   ctx.fillStyle = '#fff';
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillText(text, 0, -(size));
+
   ctx.restore();
 };
 

@@ -21,14 +21,14 @@ var init = function(canvas) {
           app.twist(App.DIRECTION.INCREASE);
           break;
         case App.KEY.SPACE:
-          app.startResetting();
+          app.onButtonDown();
           break;
       }
     });
     addEventListener('keyup', function(event) {
       switch (event.keyCode) {
         case App.KEY.SPACE:
-          app.stopResetting();
+          app.onButtonUp();
           break;
       }
     });
