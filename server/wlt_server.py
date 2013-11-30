@@ -2,7 +2,6 @@
 
 import functools
 import json
-import pyudev
 import random
 import struct
 import time
@@ -89,6 +88,7 @@ class TwistApp(tornado.web.Application, util.Publisher):
     PowerValues = 3
 
   def __init__(self, config):
+    self.input_device = None
     self.config = config
     self.cached_energy = None
     self.cached_power = None
@@ -110,6 +110,8 @@ class TwistApp(tornado.web.Application, util.Publisher):
 
     if self.config.SOURCE == 'zway':
       from energy_watch_zwave import EnergyWatch
+    elif self.config.SOURCE == 'fake':
+      from energy_watch_fake import EnergyWatch
     self.watch = EnergyWatch(config, self.on_update)
 
     self.listen(config.HTTP_PORT, '0.0.0.0')
@@ -119,16 +121,21 @@ class TwistApp(tornado.web.Application, util.Publisher):
     self.publish(TwistApp.Topic.PowerValues, data)
 
   def setup_input(self):
-    context = pyudev.Context()
+    try:
+      import pyudev
 
-    self.input_device = None
-    self.is_powermate = False
-    for device in context.list_devices(subsystem='input'):
-      is_powermate = device.get('ID_MODEL') == 'Griffin_PowerMate'
-      if ('event' in str(device.get('DEVNAME')) and device.get('ID_INPUT') == '1' and device.get('ID_INPUT_MOUSE') == '1') or \
-          (is_powermate and device.get('DEVNAME') and device.get('ID_INPUT') == '1'):
-        self.input_device = device
-        self.is_powermate = is_powermate
+      context = pyudev.Context()
+
+      self.input_device = None
+      self.is_powermate = False
+      for device in context.list_devices(subsystem='input'):
+        is_powermate = device.get('ID_MODEL') == 'Griffin_PowerMate'
+        if ('event' in str(device.get('DEVNAME')) and device.get('ID_INPUT') == '1' and device.get('ID_INPUT_MOUSE') == '1') or \
+            (is_powermate and device.get('DEVNAME') and device.get('ID_INPUT') == '1'):
+          self.input_device = device
+          self.is_powermate = is_powermate
+    except ImportError:
+      print 'no pyudev found, ignoring mice and powermates'
 
   def read_input(self, callback):
     # Event handling code from http://stackoverflow.com/questions/5060710
