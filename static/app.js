@@ -327,12 +327,21 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   var dt = new Date - this.buttonPressed;
   var duration = this.config.startAnimation.duration;
   var max = this.config.startAnimation.scale;
-  if (0 <= dt && dt < duration)
+  if (0 <= dt && dt < duration) {
     var scale = map(easeOutElastic, dt, 0, duration, 1, max);
-  else if (!this.buttonPressed)
+  } else if (!this.buttonPressed) {
     var scale = 1;
-  else
+  } else {
     var scale = max;
+  }
+  var duration = 100;
+  if (0 <= dt && dt < duration) {
+    var label = map(easeOutQuart, dt, 0, duration, 1, 0);
+  } else if (!this.buttonPressed) {
+    var label = 1;
+  } else {
+    var label = 0;
+  }
 
   ctx.save();
   ctx.translate(u.cx, u.cy);
@@ -342,13 +351,25 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   ctx.fillStyle = '#fff';
   ctx.arc(0, 0, size, 0, 2 * Math.PI, false);
   ctx.fill();
-  
-  ctx.rotate(Math.PI / 4)
-  ctx.fillStyle = '#fff';
+
+  ctx.save();
+  ctx.scale(label, label);
+
+  ctx.fillStyle = '#000';
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText(this.round(this.measure), 0, -(size));
+  ctx.textBaseline = 'middle';
+  ctx.fillText('press', 0, 0);
+
+  ctx.fillStyle = '#000';
+  ctx.font = this.getFont(10);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('to start', 0, 20);
+
+  ctx.restore();
+
+  this.drawAmount(ctx, t, u, size, this.measure);
 
   ctx.restore();
 };
@@ -382,20 +403,11 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
 
   this.drawSlices(ctx, t, u, size);
 
-  var left = this.round(this.measure - this.used.reduce(sum));
-  var total = this.round(this.measure);
-  var text = left + ' of ' + total + ' Wh left';
-
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.scale(scale, scale);
   
-  ctx.rotate(Math.PI / 4)
-  ctx.fillStyle = '#fff';
-  ctx.font = this.getFont(18);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText(text, 0, -(size));
+  this.drawAmount(ctx, t, u, size, this.measure - this.used.reduce(sum));
 
   ctx.restore();
 };
@@ -462,6 +474,22 @@ App.prototype.drawSlices = function(ctx, t, u, size) {
     ctx.closePath();
     ctx.fill();
   }.bind(this));
+};
+
+App.prototype.drawAmount = function(ctx, t, u, size, amount) {
+  ctx.rotate(Math.PI / 4)
+  ctx.fillStyle = '#fff';
+  ctx.font = this.getFont(18);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(this.round(amount), 0, -size);
+
+  ctx.font = this.getFont(10);
+  ctx.fillStyle = '#000';
+  ctx.font = this.getFont(10);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('Wh', 0, -size + 20);
 };
 
 App.prototype.getSizeForEnergy = function(energy) {
