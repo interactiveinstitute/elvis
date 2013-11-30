@@ -34,9 +34,7 @@ App.STATE = {
   INTRO: 2,
   WINDING: 3,
   PROGRESS: 4,
-  PROGRESS_DETAILS: 5,
-  FINISHED: 6,
-  FINISHED_DETAILS: 7
+  FINISHED: 5
 };
 
 App.DIRECTION = {
@@ -73,10 +71,7 @@ App.prototype.construct = function(config, canvas, source) {
     this.watts = data;
 
     if (this.state == App.STATE.INITIALIZING) this.setState(App.STATE.INTRO);
-    
-    if (this.state == App.STATE.PROGRESS || this.state == App.STATE.PROGRESS_DETAILS) {
-      this.updateUsed();
-    }
+    if (this.state == App.STATE.PROGRESS) this.updateUsed();
   }.bind(this));
   source.addEventListener('increase', function(event) {
     this.twist(App.DIRECTION.INCREASE);
@@ -85,10 +80,10 @@ App.prototype.construct = function(config, canvas, source) {
     this.twist(App.DIRECTION.DECREASE);
   }.bind(this));
   source.addEventListener('press', function(event) {
-    this.toggleDetails(true);
+    this.startResetting();
   }.bind(this));
   source.addEventListener('release', function(event) {
-    this.toggleDetails(false);
+    this.stopResetting();
   }.bind(this));
 
   this.setState(App.STATE.INITIALIZING);
@@ -152,17 +147,10 @@ App.prototype.twist = function(direction) {
   }.bind(this), this.config.countdown);
 };
 
-App.prototype.toggleDetails = function(show) {
-  switch (this.state) {
-    case App.STATE.PROGRESS:
-      if (show) this.setState(App.STATE.PROGRESS_DETAILS); break;
-    case App.STATE.PROGRESS_DETAILS:
-      if (!show) this.setState(App.STATE.PROGRESS); break;
-    case App.STATE.FINISHED:
-      if (show) this.setState(App.STATE.FINISHED_DETAILS); break;
-    case App.STATE.FINISHED_DETAILS:
-      if (!show) this.setState(App.STATE.FINISHED); break;
-  }
+App.prototype.startResetting = function() {
+};
+
+App.prototype.stopResetting = function() {
 };
 
 App.prototype.draw = function(t) {
@@ -244,30 +232,15 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   ctx.beginPath();
   ctx.fillStyle = '#fff';
   ctx.moveTo(u.cx, u.cy);
-  if (left == 1)
-    ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
-  else
-    ctx.arc(u.cx, u.cy, size, -.5 * Math.PI, (-.5 + left * 2) * Math.PI, false);
+  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
   ctx.closePath();
   ctx.fill();
-  
-  ctx.save();
-  ctx.translate(u.cx, u.cy);
-  ctx.rotate(Math.PI / 4)
-  ctx.fillStyle = '#fff';
-  ctx.font = this.getFont(18);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText(this.round(this.measure - this.used.reduce(sum)), 0, -(size));
-  ctx.restore();
-};
-
-App.prototype.draw[App.STATE.PROGRESS_DETAILS] = function(ctx, t, u) {
-  this.updateUsed();
-
-  var size = this.getSizeForEnergy(this.measure);
 
   this.drawSlices(ctx, t, u, size);
+
+  var left = this.round(this.measure - this.used.reduce(sum));
+  var total = this.round(this.measure);
+  var text = left + ' of ' + total + ' Wh left';
   
   ctx.save();
   ctx.translate(u.cx, u.cy);
@@ -276,20 +249,14 @@ App.prototype.draw[App.STATE.PROGRESS_DETAILS] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.round(this.used.reduce(sum)), 0, -(size));
+  ctx.fillText(text, 0, -(size));
   ctx.restore();
 };
 
 App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   var size = this.getSizeForEnergy(this.measure);
   
-  ctx.beginPath();
-  ctx.fillStyle = '#000';
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = this.config.display.lineWidth;
-  ctx.arc(u.cx, u.cy, size, 0, 2 * Math.PI, false);
-  ctx.fill();
-  ctx.stroke();
+  this.drawSlices(ctx, t, u, size);
   
   ctx.save();
   ctx.translate(u.cx, u.cy);
@@ -304,7 +271,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(Math.PI / 4)
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = '#000';
   ctx.font = this.getFont(10);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
@@ -329,7 +296,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(5 * Math.PI / 4)
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = '#000';
   ctx.font = this.getFont(10);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
@@ -339,42 +306,11 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(7 * Math.PI / 4)
-  ctx.fillStyle = '#fff';
+  ctx.fillStyle = '#000';
   ctx.font = this.getFont(10);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillText('twist', 0, -(size) + 20);
-  ctx.restore();
-};
-
-App.prototype.draw[App.STATE.FINISHED_DETAILS] = function(ctx, t, u) {
-  var size = this.getSizeForEnergy(this.measure);
-  
-  this.drawSlices(ctx, t, u, size);
-  
-  ctx.save();
-  ctx.translate(u.cx, u.cy);
-  ctx.rotate(Math.PI / 4)
-  ctx.fillStyle = '#fff';
-  ctx.font = this.getFont(18);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText(this.round(this.measure), 0, -(size));
-  ctx.restore();
-  
-  var totalMinutes = (this.end - this.start) / 1000 / 60;
-  var hours = Math.floor(totalMinutes / 60);
-  var minutes = Math.round(totalMinutes % 60);
-  var time = + hours + ':' + ((minutes < 10) ? '0' : '') + minutes;
-  
-  ctx.save();
-  ctx.translate(u.cx, u.cy);
-  ctx.rotate(5 * Math.PI / 4)
-  ctx.fillStyle = '#fff';
-  ctx.font = this.getFont(18);
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  ctx.fillText(time, 0, -(size));
   ctx.restore();
 };
 
