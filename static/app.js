@@ -315,6 +315,8 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   var max = this.config.startAnimation.scale;
   if (0 <= dt && dt < duration)
     var scale = map(easeOutElastic, dt, 0, duration, 1, max);
+  else if (!this.buttonPressed)
+    var scale = 1;
   else
     var scale = max;
 
