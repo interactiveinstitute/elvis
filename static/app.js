@@ -150,7 +150,7 @@ App.prototype.twist = function(direction) {
   this.countdown = setTimeout(function() {
     delete this.firstData;
     this.used = this.config.colors.map(function() { return 0; });
-    this.start = +new Date;/
+    this.start = +new Date;
     this.setState(App.STATE.PROGRESS);
   }.bind(this), this.config.countdown);
 };
@@ -196,7 +196,10 @@ App.prototype.draw[App.STATE.INITIALIZING] = function(ctx) {
 };
 
 App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
-  var size = this.canvas.height / 2 - this.config.display.padding - this.config.display.lineWidth;
+  if (this.measure)
+    var size = this.getSizeForEnergy(this.measure);
+  else
+    var size = this.canvas.height / 2 - this.config.display.padding - this.config.display.lineWidth;
   
   ctx.beginPath();
   ctx.fillStyle = '#000';
@@ -243,9 +246,11 @@ App.prototype.draw[App.STATE.RESETTING] = function(ctx, t, u) {
   var radius = Math.max(inner, (Math.floor(elapsed / 1000) + map(easeOutQuart, elapsed, 0, 1000, 0, 1)) * perCircle);
   ctx.beginPath();
   ctx.fillStyle = '#000';
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = this.config.display.lineWidth;
   ctx.arc(0, 0, radius, 0, 2 * Math.PI, false);
   ctx.fill();
+  ctx.stroke();
 
   for (var i = 0; i < seconds; i++) {
     ctx.beginPath();
