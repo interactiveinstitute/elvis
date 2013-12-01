@@ -24,8 +24,8 @@ CIRCLES = {
 MEASURE_INTERVAL = 50 # ms
 
 # The source can be 'zway', 'plugwise' or 'fake'.
-#SOURCE = 'zway'
-SOURCE = 'fake'
+SOURCE = 'zway'
+#SOURCE = 'fake'
 
 COLORS = [ # name, rgb (hex), fibaro
   ['red',    '#ff0000', 3],
