@@ -82,7 +82,8 @@ App.prototype.construct = function(config, canvas, source) {
     this.drawUtil.colors[i] = values[1];
   }, this);
   
-  this.measure = this.config.watthour.start;
+  this.measure = this.config.watthour.min;
+  this.input = Math.sqrt(this.measure / this.config.watthour.mapping);
 
   this.watts = [];
   this.used = [];
@@ -171,9 +172,15 @@ App.prototype.twist = function(direction) {
   
   if (this.countdown) clearTimeout(this.countdown);
   
-  this.measure += factor * this.config.watthour.step;
-  if (this.measure < this.config.watthour.min) this.measure = this.config.watthour.min;
-  if (this.measure > this.config.watthour.max) this.measure = this.config.watthour.max;
+  var newInput = this.input + factor;
+  var newMeasure = this.config.watthour.mapping * Math.pow(newInput, 2);
+  newMeasure = Math.round(newMeasure * 10) / 10;
+  if (this.config.watthour.min <= newMeasure && newMeasure <= this.config.watthour.max) {
+    this.input = newInput;
+    this.measure = newMeasure;
+  } else {
+    console.log('limit, input would be', newInput, 'and measure', newMeasure);
+  }
 };
 
 App.prototype.onButtonDown = function() {
@@ -497,7 +504,7 @@ App.prototype.getSizeForEnergy = function(energy) {
   var minSize = this.config.display.minSize * maxSize;
   var maxEnergy = this.config.watthour.max;
   
-  return minSize + (energy / maxEnergy) * (maxSize - minSize);
+  return minSize + Math.sqrt(energy / maxEnergy) * (maxSize - minSize);
 };
 
 App.prototype.getFont = function(size) {

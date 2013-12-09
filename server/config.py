@@ -50,8 +50,8 @@ CLIENT_CONFIG = {
   "watthour": {
     "min": 1,
     "max": 1000,
-    "start": 0,
-    "step": 1
+    "start": 1,
+    "mapping": .05
   },
   "countdown": 100,
   "resetTiming": {
