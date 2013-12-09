@@ -31,7 +31,12 @@ class ZWay(PubSub):
     return self._do_http_request('/ZwaveAPI/Data/%d' % (since))
 
   def get_updates(self):
-    data = json.loads(self.get_data(self.last_timestamp))
+    try:
+      data = json.loads(self.get_data(self.last_timestamp))
+    except TypeError:
+      print 'Could not parse updates'
+      return
+
     self.last_timestamp = int(data['updateTime'])
     self.last_own_timestamp = time.time()
 
