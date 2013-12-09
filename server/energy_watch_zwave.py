@@ -55,9 +55,9 @@ class Plug(PubSub):
 
   def set_color(self, color):
     self.color = color
-    self._set_option(61, color)
-    self._set_option(62, color)
-    self._set_option(63, color)
+    self._set_option(61, color) # when the device is on
+    self._set_option(62, 8) # when the device is off, turn light off
+    self._set_option(63, color) # z-wave network alarm detection
 
   def __str__(self):
     return 'plug %s (%s), P = %.2f W' % (self.id, self.color, self.W)
