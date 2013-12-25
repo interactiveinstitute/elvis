@@ -1,3 +1,4 @@
+import datetime
 import functools
 import tornado
 
@@ -58,15 +59,17 @@ class Plug(PubSub):
     self._set_option(47, 3600) # send unrecorded power reports every hour
     self._set_option(52, 0) # don't turn on or off devices
 
+    # Colors
+    self._set_option(61, self.color) # when the device is on
+    self._set_option(62, 8) # when the device is off, turn light off
+    self._set_option(63, self.color) # z-wave network alarm detection
+
   def _refresh(self, command_class):
     self.zway.run('devices[%d].instances[0].commandClasses[%d].Get()' % (self.id, command_class))
   def refresh_power(self): self._refresh(49) 
 
   def set_color(self, color):
     self.color = color
-    self._set_option(61, color) # when the device is on
-    self._set_option(62, 8) # when the device is off, turn light off
-    self._set_option(63, color) # z-wave network alarm detection
 
   def __str__(self):
     return 'plug %s (%s), P = %.2f W' % (self.id, self.color, self.W)
@@ -83,6 +86,8 @@ class EnergyWatch(energy_watch.EnergyWatch):
     self.zway.start()
 
     self.values = []
+
+    self._configure_all()
 
   def trigger(self, data=None, key=None):
     old_values = self.values
@@ -112,6 +117,17 @@ class EnergyWatch(energy_watch.EnergyWatch):
       plug.subscribe(self.trigger)
       self.plugs.append(plug)
       return plug
+
+  def _configure_all(self):
+    print 'configuring all plugs'
+
+    for plug in self.plugs:
+      if plug.connected:
+        plug.configure()
+
+    dt = datetime.timedelta(milliseconds=self.config.ZWAVE_RECONFIGURE_INTERVAL)
+    loop = tornado.ioloop.IOLoop.instance()
+    loop.add_timeout(dt, self._configure_all)
 
 if __name__ == '__main__':
   import tornado.ioloop
