@@ -45,7 +45,8 @@ CLIENT_CONFIG = {
   "display": {
     "padding": 20,
     "lineWidth": 2,
-    "minSize": .5
+    "minSize": .5,
+    "list": True 
   },
   "watthour": {
     "min": 1,

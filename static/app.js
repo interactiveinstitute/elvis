@@ -228,6 +228,7 @@ App.prototype.draw = function(t) {
   var ctx = this.canvas.getContext('2d');
 
   ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  ctx.beginPath();
   ctx.rect(0, 0, this.canvas.width, this.canvas.height);
   ctx.fillStyle = 'black';
   ctx.fill();
@@ -417,6 +418,8 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   this.drawAmount(ctx, t, u, size, this.measure - this.used.reduce(sum));
 
   ctx.restore();
+
+  this.drawList(ctx, t, u);
 };
 
 App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
@@ -468,6 +471,8 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.textBaseline = 'bottom';
   ctx.fillText('hours', 0, -size - 5);
   ctx.restore();
+
+  this.drawList(ctx, t, u);
 };
 
 App.prototype.drawSlices = function(ctx, t, u, size) {
@@ -497,6 +502,25 @@ App.prototype.drawAmount = function(ctx, t, u, size, amount) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
   ctx.fillText('Wh left', 0, -size - 5);
+};
+
+App.prototype.drawList = function(ctx, t, u) {
+  if (!this.config.display.list) return;
+  var n = this.used.length;
+  var width = 100;
+  this.used.forEach(function(Wh, i) {
+    ctx.beginPath();
+    ctx.fillStyle = u.colors[i];
+    ctx.rect(u.width - 10 - width, u.height - 25 - (n - i - 1) * 20, 14, 14);
+    ctx.fill();
+
+    ctx.font = this.getFont(10);
+    ctx.fillStyle = '#999';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    var amount = this.used[i].toFixed(3) + ' Wh';
+    ctx.fillText(amount, u.width - 10, u.height - 10 - (n - i - 1) * 20);
+  }.bind(this));
 };
 
 App.prototype.getSizeForEnergy = function(energy) {
