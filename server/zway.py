@@ -62,3 +62,34 @@ class ZWay(PubSub):
       print 'Assertion error:', e
     http_client.close()
     return response
+
+if __name__ == '__main__':
+  # Test the ZWay implementation
+
+  zway = ZWay(config.ZWAVE_SERVER)
+
+  def update_devices(devices, key):
+    def is_plug(info):
+      return info['data']['manufacturerId']['value'] == 271 and \
+        info['data']['manufacturerProductType']['value'] == 1536
+    for str_id, info in devices.iteritems():
+      if is_plug(info):
+        id = int(str_id)
+
+        print 'device', id
+
+        color_id = 0 # red
+        color = config.COLORS[color_id][2]
+        set_option(id, 61, color) # when the devices is on
+        #set_option(id, 62, 8) # when the device is off, turn light off
+        set_option(id, 62, 8) # when the device is off, turn light off
+        set_option(id, 63, color) # z-wave network alarm detection
+
+  zway.subscribe(update_devices, 'devices')
+
+  def set_option(id, register, value):
+    command = 'devices[%d].instances[0].commandClasses[112].Set(%d,%d,1)' % \
+        (id, register, value)
+    zway.run(command)
+
+  zway.start()
