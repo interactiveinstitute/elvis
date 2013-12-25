@@ -251,18 +251,18 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   } else var scale = 1;
 
   var size = this.getSizeForEnergy(this.measure || this.config.watthour.min);
+  
+  ctx.beginPath();
+  ctx.lineWidth = this.config.display.lineWidth * scale;
+  ctx.fillStyle = '#000';
+  ctx.strokeStyle = '#fff';
+  ctx.arc(u.cx, u.cy, size * scale, 0, 2 * Math.PI, false);
+  ctx.fill();
+  ctx.stroke();
 
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.scale(scale, scale);
-  
-  ctx.beginPath();
-  ctx.fillStyle = '#000';
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = this.config.display.lineWidth;
-  ctx.arc(0, 0, size, 0, 2 * Math.PI, false);
-  ctx.fill();
-  ctx.stroke();
 
   var angle = map(linear, t, u.t0, u.t0 + 7000, -Math.PI / 4, 7/4 * Math.PI);
   ctx.rotate(angle);
@@ -295,15 +295,11 @@ App.prototype.draw[App.STATE.RESETTING] = function(ctx, t, u) {
   var size = this.getSizeForEnergy(this.measure || this.config.watthour.max);
   var perCircle = size / seconds;
 
-  ctx.save();
-  ctx.translate(u.cx, u.cy);
-  ctx.scale(scale1, scale1);
-
   for (var i = 0; i < seconds; i++) {
     ctx.beginPath();
     ctx.strokeStyle = '#000';
-    ctx.lineWidth = this.config.display.lineWidth;
-    ctx.arc(0, 0, i * perCircle, 0, 2 * Math.PI, false);
+    ctx.lineWidth = this.config.display.lineWidth * scale1;
+    ctx.arc(u.cx, u.cy, i * perCircle * scale1, 0, 2 * Math.PI, false);
     ctx.stroke();
   }
 
@@ -311,10 +307,14 @@ App.prototype.draw[App.STATE.RESETTING] = function(ctx, t, u) {
   ctx.beginPath();
   ctx.fillStyle = '#000';
   ctx.strokeStyle = '#fff';
-  ctx.lineWidth = this.config.display.lineWidth;
-  ctx.arc(0, 0, radius, 0, 2 * Math.PI, false);
+  ctx.lineWidth = this.config.display.lineWidth * scale1;
+  ctx.arc(u.cx, u.cy, radius * scale1, 0, 2 * Math.PI, false);
   ctx.fill();
   ctx.stroke();
+
+  ctx.save();
+  ctx.translate(u.cx, u.cy);
+  ctx.scale(scale1, scale1);
 
   if (elapsed > ms - appear) {
     var scale2 = map(/*easeOutQuart*/ easeOutElastic, elapsed - appear, 0, appear, 1, 0);
@@ -350,14 +350,14 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
     var label = 0;
   }
 
+  ctx.beginPath();
+  ctx.fillStyle = '#fff';
+  ctx.arc(u.cx, u.cy, size * scale, 0, 2 * Math.PI, false);
+  ctx.fill();
+
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.scale(scale, scale);
-
-  ctx.beginPath();
-  ctx.fillStyle = '#fff';
-  ctx.arc(0, 0, size, 0, 2 * Math.PI, false);
-  ctx.fill();
 
   ctx.save();
   ctx.scale(label, label);
