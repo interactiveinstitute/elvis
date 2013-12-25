@@ -431,17 +431,17 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.round(this.measure), 0, -(size));
+  ctx.fillText(this.round(this.measure), 0, -size - 20);
   ctx.restore();
   
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(Math.PI / 4)
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = '#fff';
   ctx.font = this.getFont(10);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('Wh used', 0, -(size) + 20);
+  ctx.fillText('Wh used', 0, -size - 5);
   ctx.restore();
   
   var totalMinutes = (this.end - this.start) / 1000 / 60;
@@ -456,17 +456,17 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(time, 0, -(size));
+  ctx.fillText(time, 0, -size - 20);
   ctx.restore();
   
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(5 * Math.PI / 4)
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = '#fff';
   ctx.font = this.getFont(10);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('hours', 0, -(size) + 20);
+  ctx.fillText('hours', 0, -size - 5);
   ctx.restore();
 };
 
@@ -489,14 +489,14 @@ App.prototype.drawAmount = function(ctx, t, u, size, amount) {
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.round(amount), 0, -size);
+  ctx.fillText(this.round(amount), 0, -size - 20);
 
   ctx.font = this.getFont(10);
-  ctx.fillStyle = '#000';
+  ctx.fillStyle = '#fff';
   ctx.font = this.getFont(10);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('Wh left', 0, -size + 20);
+  ctx.fillText('Wh left', 0, -size - 5);
 };
 
 App.prototype.getSizeForEnergy = function(energy) {
