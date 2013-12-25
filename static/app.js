@@ -472,15 +472,15 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
 
 App.prototype.drawSlices = function(ctx, t, u, size) {
   var angle = -Math.PI / 2;
-  this.used.forEach(function(Wh, i) {
-    var add = Wh / this.measure * 2 * Math.PI;
+  for (var i = this.used.length - 1; i >= 0; i--) {
+    var add = this.used[i] / this.measure * 2 * Math.PI;
     ctx.beginPath();
     ctx.fillStyle = u.colors[i];
     ctx.moveTo(u.cx, u.cy);
-    ctx.arc(u.cx, u.cy, size, angle, angle -= add, true);
+    ctx.arc(u.cx, u.cy, size, angle, angle += add, false);
     ctx.closePath();
     ctx.fill();
-  }.bind(this));
+  }
 };
 
 App.prototype.drawAmount = function(ctx, t, u, size, amount) {
