@@ -37,8 +37,14 @@ class Plug(PubSub):
       print self.id, 'connected?', self.connected
 
   def _set_option(self, register, value):
-    command = 'devices[%d].instances[0].commandClasses[112].Set(%d,%d,1)' % \
-        (self.id, register, value)
+    # Not sure what this parameter does, but this reflects the web interface's behavior
+    if value < 3600:
+      last_param = 1
+    else:
+      last_param = 2
+
+    command = 'devices[%d].instances[0].commandClasses[112].Set(%d,%d,%d)' % \
+        (self.id, register, value, last_param)
     print 'run:', command
     self.zway.run(command)
 
