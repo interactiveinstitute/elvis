@@ -26,6 +26,7 @@ class Plug(PubSub):
 
   def on_fail_update(self, data, key):
     self.set_connected(not data['value'])
+    self.publish()
 
   def on_connection_update(self, data, key):
     self.set_connected(data['value'] > 0)
@@ -34,6 +35,8 @@ class Plug(PubSub):
   def set_connected(self, connected):
     if connected != self.connected:
       self.connected = connected
+      if not connected:
+        self.W = 0
       print self.id, 'connected?', self.connected
 
   def _set_option(self, register, value):
