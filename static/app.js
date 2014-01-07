@@ -120,8 +120,7 @@ App.prototype.construct = function(config, canvas, source) {
 };
 
 App.prototype.round = function(Wh) {
-  var rounded = Math.round(Wh * 10) / 10;
-  return Math.floor(rounded) + '.' + Math.round(rounded % 1 * 10);
+  return Wh.toFixed(3);
 };
 
 App.prototype.gray = function(opacity) {
@@ -518,7 +517,7 @@ App.prototype.drawList = function(ctx, t, u) {
     ctx.fillStyle = '#999';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
-    var amount = this.used[i].toFixed(3) + ' Wh';
+    var amount = this.round(this.used[i]) + ' Wh';
     ctx.fillText(amount, u.width - 10, u.height - 10 - (n - i - 1) * 20);
   }.bind(this));
 };
