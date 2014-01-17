@@ -508,7 +508,7 @@ App.prototype.drawAmount = function(ctx, t, u, size, amount) {
 App.prototype.drawList = function(ctx, t, u) {
   if (!this.config.display.list) return;
   var n = this.used.length;
-  var width = 100;
+  var width = 160;
   this.used.forEach(function(Wh, i) {
     ctx.beginPath();
     ctx.fillStyle = u.colors[i];
@@ -519,7 +519,10 @@ App.prototype.drawList = function(ctx, t, u) {
     ctx.fillStyle = '#999';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
-    var amount = this.round(this.used[i]) + ' Wh';
+    if (this.state == App.STATE.FINISHED || (this.state == App.STATE.RESETTING && this.preResetState == App.STATE.FINISHED))
+      var amount = this.round(this.used[i]) + ' Wh (' + (this.used[i] / this.used.reduce(sum) * 100.0).toFixed(1) + ' %)';
+    else
+      var amount = this.round(this.watts[i]) + ' W';
     ctx.fillText(amount, u.width - 10, u.height - 10 - (n - i - 1) * 20);
   }.bind(this));
 };
