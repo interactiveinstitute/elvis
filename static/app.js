@@ -86,8 +86,10 @@ App.prototype.construct = function(config, canvas, source) {
   this.input = Math.sqrt(this.measure / this.config.watthour.mapping);
 
   this.watts = [];
-  this.used = [];
   this.lastUsedUpdate = 0;
+  this.used = [];
+  for (var i = 0; i < config.nPlugs; i++)
+    this.used[i] = 0;
   
   source.addEventListener('init', function(event) {
     this.setState(App.STATE.INTRO);
@@ -200,7 +202,7 @@ App.prototype.onButtonUp = function() {
       break;
     case App.STATE.WINDING:
       delete this.firstData;
-      this.used = this.config.colors.map(function() { return 0; });
+      this.used = this.used.map(function() { return 0; });
       this.start = +new Date;
       this.setState(App.STATE.PROGRESS);
   }

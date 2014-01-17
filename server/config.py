@@ -37,10 +37,13 @@ COLORS = [ # name, rgb (hex), fibaro
   ['white',  '#aaaaaa', 2]
 ]
 
+N_PLUGS = 5
+
 # A configuration JSON object sent to the client.
 CLIENT_CONFIG = {
 #  "circles": CIRCLES,
   "colors": COLORS,
+  "nPlugs": N_PLUGS,
   "dry_run": SOURCE == 'fake',
   "display": {
     "padding": 20,

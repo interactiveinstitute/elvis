@@ -8,7 +8,7 @@ class EnergyWatch(energy_watch.EnergyWatch):
   def __init__(self, config, callback):
     self.callback = callback
 
-    self.values = [1000 for color in config.COLORS]
+    self.values = [1000 for color in config.COLORS][:config.N_PLUGS]
 
     self.trigger()
 

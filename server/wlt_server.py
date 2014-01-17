@@ -31,13 +31,6 @@ class DataHandler(tornado.web.RequestHandler):
     else:
       self.write('event: init\ndata:\n\n')
       self.flush()
-      
-    if self.app.config.SOURCE == 'fake':
-      self.start_time = tornado.ioloop.IOLoop.instance().time()
-      self.n_sent = 0
-      self.random_data = [0 for circle in self.app.config.CIRCLES.keys()]
-
-      self.send_random_data()
     
   def on_connection_close(self):
     self.app.unsubscribe(TwistApp.Topic.PowerValues, self.on_power_update)
@@ -54,19 +47,6 @@ class DataHandler(tornado.web.RequestHandler):
     self.write('event: powerdata\ndata: %s\n\n' % json.dumps(data))
     self.flush()
     
-  def send_random_data(self):
-    if self.closed: return
-    
-    self.write('event: energydata\ndata: %s\n\n' % json.dumps(self.random_data))
-    self.flush()
-    
-    for i in range(len(self.random_data)):
-      self.random_data[i] += random.random() / 100
-    
-    self.n_sent += 1
-    deadline = self.start_time + self.n_sent * self.app.config.MEASURE_INTERVAL / 1000
-    tornado.ioloop.IOLoop.instance().add_timeout(deadline, self.send_random_data)
-
 class JsonHandler(tornado.web.RequestHandler):
   'Sends a static JSON string to clients. Used for the configuration object.'
 
