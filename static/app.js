@@ -536,12 +536,12 @@ App.prototype.drawList = function(ctx, t, u) {
         amount = this.round(this.used[i]) + ' Wh';
         percentage = (this.used[i] / this.used.reduce(sum) * 100.0).toFixed(1) + ' %';
       } else {
-        amount = '–.––– Wh';
-        percentage = '–.– %';
+        amount = '-.--- Wh';
+        percentage = '-.- %';
       }
     } else {
       if (this.watts[i] == -1)
-        amount = '–.– W';
+        amount = '-.- W';
       else
         amount = this.watts[i].toFixed(1) + ' W';
     }
