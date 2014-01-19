@@ -517,11 +517,6 @@ App.prototype.drawList = function(ctx, t, u) {
   if (!this.config.display.list.show) return;
   var n = this.used.length;
 
-  this.config.display.list.percentageWidth = 56;
-  this.config.display.list.valueWidth = 96;
-  this.config.display.list.spacing = 10;
-  this.config.display.list.size = 14;
-
   var width = this.config.display.list.valueWidth + this.config.display.list.percentageWidth;
   var cl = this.config.display.list;
   this.used.forEach(function(Wh, i) {
