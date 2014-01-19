@@ -88,8 +88,11 @@ App.prototype.construct = function(config, canvas, source) {
   this.watts = [];
   this.lastUsedUpdate = 0;
   this.used = [];
-  for (var i = 0; i < config.nPlugs; i++)
+  this.wasConnected = [];
+  for (var i = 0; i < config.nPlugs; i++) {
     this.used[i] = 0;
+    this.wasConnected[i] = false;
+  }
   
   source.addEventListener('init', function(event) {
     this.setState(App.STATE.INTRO);
@@ -97,6 +100,9 @@ App.prototype.construct = function(config, canvas, source) {
   source.addEventListener('powerdata', function(event) {
     var data = JSON.parse(event.data).map(parseFloat);
     this.watts = data;
+
+    for (var i = 0; i < this.watts.length; i++)
+      if (this.watts[i] != -1) this.wasConnected[i] = true;
 
     if (this.state == App.STATE.INITIALIZING) this.setState(App.STATE.INTRO);
     if (this.state == App.STATE.PROGRESS ||
@@ -138,8 +144,10 @@ App.prototype.updateUsed = function() {
     var millis = now - this.lastUsedUpdate;
     var watts = this.watts;
     for (var i = 0; i < this.watts.length; i++) {
-      var add = watts[i] / 1000.0 / 3600.0;
-      this.used[i] = (this.used[i] || 0) + add;
+      if (watts[i] != -1) {
+        var add = watts[i] / 1000.0 / 3600.0;
+        this.used[i] = (this.used[i] || 0) + add;
+      }
     }
     this.lastUsedUpdate = now;
 
@@ -506,24 +514,45 @@ App.prototype.drawAmount = function(ctx, t, u, size, amount) {
 };
 
 App.prototype.drawList = function(ctx, t, u) {
-  if (!this.config.display.list) return;
+  if (!this.config.display.list.show) return;
   var n = this.used.length;
-  var width = 160;
+
+  this.config.display.list.percentageWidth = 56;
+  this.config.display.list.valueWidth = 96;
+  this.config.display.list.spacing = 10;
+  this.config.display.list.size = 14;
+
+  var width = this.config.display.list.valueWidth + this.config.display.list.percentageWidth;
+  var cl = this.config.display.list;
   this.used.forEach(function(Wh, i) {
     ctx.beginPath();
     ctx.fillStyle = u.colors[i];
-    ctx.rect(u.width - 10 - width, u.height - 25 - (n - i - 1) * 20, 14, 14);
+    ctx.rect(u.width - cl.spacing - width, u.height - cl.size - cl.spacing - (n - i - 1) * (cl.size + 6), cl.size, cl.size);
     ctx.fill();
 
     ctx.font = this.getFont(10);
     ctx.fillStyle = '#999';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
-    if (this.state == App.STATE.FINISHED || (this.state == App.STATE.RESETTING && this.preResetState == App.STATE.FINISHED))
-      var amount = this.round(this.used[i]) + ' Wh (' + (this.used[i] / this.used.reduce(sum) * 100.0).toFixed(1) + ' %)';
-    else
-      var amount = this.round(this.watts[i]) + ' W';
-    ctx.fillText(amount, u.width - 10, u.height - 10 - (n - i - 1) * 20);
+    var amount = '';
+    var percentage = '';
+    if (this.state == App.STATE.FINISHED || (this.state == App.STATE.RESETTING && this.preResetState == App.STATE.FINISHED)) {
+      if (this.wasConnected[i]) {
+        amount = this.round(this.used[i]) + ' Wh';
+        percentage = (this.used[i] / this.used.reduce(sum) * 100.0).toFixed(1) + ' %';
+      } else {
+        amount = '–.––– Wh';
+        percentage = '–.– %';
+      }
+    } else {
+      if (this.watts[i] == -1)
+        amount = '–.– W';
+      else
+        amount = this.watts[i].toFixed(1) + ' W';
+    }
+    ctx.fillText(amount, u.width - cl.spacing - cl.percentageWidth, u.height - cl.spacing - (n - i - 1) * (cl.size + 6));
+    if (percentage)
+      ctx.fillText(percentage, u.width - cl.spacing, u.height - cl.spacing - (n - i - 1) * (cl.size + 6));
   }.bind(this));
 };
 

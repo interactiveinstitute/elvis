@@ -49,7 +49,13 @@ CLIENT_CONFIG = {
     "padding": 20,
     "lineWidth": 2,
     "minSize": .5,
-    "list": True 
+    "list": {
+      "show": True,
+      "percentageWidth": 56,
+      "valueWidth": 96,
+      "spacing": 10,
+      "size": 14,
+    }
   },
   "watthour": {
     "min": 1,

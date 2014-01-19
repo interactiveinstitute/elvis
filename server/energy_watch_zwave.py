@@ -85,18 +85,21 @@ class EnergyWatch(energy_watch.EnergyWatch):
     self.zway.subscribe(self.update_devices, 'devices')
     self.zway.start()
 
-    self.values = []
+    self.values = [-1] * self.config.N_PLUGS
 
     self._configure_all()
 
   def trigger(self, data=None, key=None):
     old_values = self.values
-    self.values = [plug.W for plug in self.plugs]
+    self.values = self.collect_values()
     if old_values != self.values:
       self.call_back()
 
   def call_back(self):
-    self.callback([plug.W for plug in self.plugs])
+    self.callback(self.collect_values())
+
+  def collect_values(self):
+    return [plug.W for plug in self.plugs] + [-1] * max(0, self.config.N_PLUGS - len(self.plugs))
 
   def update_devices(self, devices, key):
     def is_plug(info):
