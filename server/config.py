@@ -31,8 +31,8 @@ COLORS = [ # name, rgb (hex), fibaro
   ['red',    '#ff0000', 3],
   ['blue',   '#0000ff', 5],
   ['green',  '#00ff00', 4],
-  ['yellow', '#ffff00', 6],
   ['purple', '#ff00ff', 8],
+  ['yellow', '#ffff00', 6],
   ['cyan',   '#99cccc', 7],
   ['white',  '#aaaaaa', 2]
 ]
