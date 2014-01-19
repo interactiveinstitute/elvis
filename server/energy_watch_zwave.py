@@ -11,7 +11,7 @@ class Plug(PubSub):
     super(Plug, self).__init__()
 
     self.id = id
-    self.W = 0
+    self.W = -1
     self.color = 9
     self.zway = zway
     self.connected = None
@@ -20,6 +20,12 @@ class Plug(PubSub):
     self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
     self.zway.subscribe(self.on_power_update, 'devices.%d.instances.0.commandClasses.49.data.4' % id)
     self.zway.subscribe(self.on_connection_update, 'devices.%d.instances.0.commandClasses.37.data.level' % id)
+
+  def get_power(self):
+    if self.connected:
+      return self.W
+    else:
+      return -1
 
   def on_power_update(self, data, key):
     self.W = float(data['val']['value'])
@@ -37,7 +43,7 @@ class Plug(PubSub):
     if connected != self.connected:
       self.connected = connected
       if not connected:
-        self.W = 0
+        self.W = -1
       print self.id, 'connected?', self.connected
 
   def _set_option(self, register, value):
@@ -99,7 +105,7 @@ class EnergyWatch(energy_watch.EnergyWatch):
     self.callback(self.collect_values())
 
   def collect_values(self):
-    return [plug.W for plug in self.plugs] + [-1] * max(0, self.config.N_PLUGS - len(self.plugs))
+    return [plug.get_power() for plug in self.plugs] + [-1] * max(0, self.config.N_PLUGS - len(self.plugs))
 
   def update_devices(self, devices, key):
     def is_plug(info):
