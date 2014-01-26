@@ -1,12 +1,12 @@
 (e)lVis
 =======
 
-An adaptation of Watt-Lite Twist for Energy in a Box at KomTek [1]. It allows
+An adaptation of Watt-Lite Twist for [Energy in a Box at KomTek] [1]. It allows
 users to choose an amount of watt-hours, measure how that amount is being
 used up by multiple devices and look how the usage is distributed between
 those devices.
 
-Created at Interactive Institute in Eskilstuna [2].
+Created at Interactive Institute in [Eskilstuna] [2].
 
 [1]: https://www.tii.se/projects/energy-in-a-box-at-komtek
 [2]: https://www.tii.se/contact/eskilstuna
