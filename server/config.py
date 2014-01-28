@@ -31,22 +31,31 @@ COLORS = [ # name, rgb (hex), fibaro
   ['red',    '#ff0000', 3],
   ['blue',   '#0000ff', 5],
   ['green',  '#00ff00', 4],
-  ['yellow', '#ffff00', 6],
   ['purple', '#ff00ff', 8],
+  ['yellow', '#ffff00', 6],
   ['cyan',   '#99cccc', 7],
   ['white',  '#aaaaaa', 2]
 ]
+
+N_PLUGS = 5
 
 # A configuration JSON object sent to the client.
 CLIENT_CONFIG = {
 #  "circles": CIRCLES,
   "colors": COLORS,
+  "nPlugs": N_PLUGS,
   "dry_run": SOURCE == 'fake',
   "display": {
     "padding": 20,
     "lineWidth": 2,
     "minSize": .5,
-    "list": True 
+    "list": {
+      "show": True,
+      "percentageWidth": 56,
+      "valueWidth": 96,
+      "spacing": 10,
+      "size": 14,
+    }
   },
   "watthour": {
     "min": 1,

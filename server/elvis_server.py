@@ -1,4 +1,20 @@
 #!/usr/bin/env python
+#
+# This file is part of (e)lVis.
+# Copyright 2013-2014 Interactive Institute Swedish ICT AB.
+#
+# (e)lVis is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# (e)lVis is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with (e)lVis.  If not, see <http://www.gnu.org/licenses/>.
 
 import functools
 import json
@@ -31,13 +47,6 @@ class DataHandler(tornado.web.RequestHandler):
     else:
       self.write('event: init\ndata:\n\n')
       self.flush()
-      
-    if self.app.config.SOURCE == 'fake':
-      self.start_time = tornado.ioloop.IOLoop.instance().time()
-      self.n_sent = 0
-      self.random_data = [0 for circle in self.app.config.CIRCLES.keys()]
-
-      self.send_random_data()
     
   def on_connection_close(self):
     self.app.unsubscribe(TwistApp.Topic.PowerValues, self.on_power_update)
@@ -54,19 +63,6 @@ class DataHandler(tornado.web.RequestHandler):
     self.write('event: powerdata\ndata: %s\n\n' % json.dumps(data))
     self.flush()
     
-  def send_random_data(self):
-    if self.closed: return
-    
-    self.write('event: energydata\ndata: %s\n\n' % json.dumps(self.random_data))
-    self.flush()
-    
-    for i in range(len(self.random_data)):
-      self.random_data[i] += random.random() / 100
-    
-    self.n_sent += 1
-    deadline = self.start_time + self.n_sent * self.app.config.MEASURE_INTERVAL / 1000
-    tornado.ioloop.IOLoop.instance().add_timeout(deadline, self.send_random_data)
-
 class JsonHandler(tornado.web.RequestHandler):
   'Sends a static JSON string to clients. Used for the configuration object.'
 

@@ -1,16 +1,21 @@
-Watt-Lite Twist Lite
-====================
+(e)lVis
+=======
 
-An adaptation of Watt-Lite Twist for Energy in a Box på KomTek. It allows
+An adaptation of Watt-Lite Twist for [Energy in a Box at KomTek] [1]. It allows
 users to choose an amount of watt-hours, measure how that amount is being
 used up by multiple devices and look how the usage is distributed between
 those devices.
+
+Created at Interactive Institute in [Eskilstuna] [2].
+
+[1]: https://www.tii.se/projects/energy-in-a-box-at-komtek
+[2]: https://www.tii.se/contact/eskilstuna
 
 
 How it works
 ------------
 
-A WLTL setup consists of a Python web server that streams power
+An (e)lVis setup consists of a Python web server that streams power
 measurements and a JavaScript client. The client can run either in the
 web browser or in Node. 
 
@@ -26,7 +31,7 @@ There are three implementations: `plugwise`, `zwave` and `fake`. The
 How to set up your environment
 ------------------------------
 
-On a raspberry pi, run `tools/install.sh` to make the Node implementation
+On a Raspberry Pi, run `tools/install.sh` to make the Node implementation
 work. Otherwise, just make sure you have `python-serial` installed.
 
 
@@ -35,7 +40,7 @@ How to test it
 
 1. Edit `config.py` to suit your needs. You may want to edit the `SOURCE`
    variable to switch between implementations.
-2. Run: `cd server && ./wlt_server.py`.
+2. Run: `cd server && ./elvis_server.py`.
 3. Either open `http://localhost:8000/app/index.html` in your web browser
    or run `client/client.js` using Node (`~/node/0/bin/node` on RPi).
 
@@ -60,9 +65,9 @@ In the Node interface, use a mouse wheel and mouse buttons instead.
 How to set up autorun
 ---------------------
 
-    sudo cp ~/git/watt-lite-twist-lite/wltl /etc/init.d/wltl
-    sudo chmod 755 /etc/init.d/wltl
-    sudo update-rc.d wltl defaults
+    sudo cp ~/git/elvis/tools/elvis /etc/init.d/elvis
+    sudo chmod 755 /etc/init.d/elvis
+    sudo update-rc.d elvis defaults
 
 Kill it using `sudo service wltl stop`.
 
@@ -78,7 +83,7 @@ All Python scripts are in `server/`:
   when the interaction starts.
 - In `util` the `Publisher` class is defined that implements a small pubsub
   system.
-- The main program is in `wlt_server.py` and sets up a Tornado web server.
+- The main program is in `elvis_server.py` and sets up a Tornado web server.
   This server serves three types of data:
   1. The app in the `static/` directory.
   2. The `CLIENT_CONFIG` config variable.

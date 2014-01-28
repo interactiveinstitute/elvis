@@ -1,5 +1,22 @@
+# This file is part of (e)lVis.
+# Copyright 2013-2014 Interactive Institute Swedish ICT AB.
+#
+# (e)lVis is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# (e)lVis is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with (e)lVis.  If not, see <http://www.gnu.org/licenses/>.
+
 import datetime
 import functools
+import json
 import tornado
 
 import energy_watch
@@ -11,7 +28,7 @@ class Plug(PubSub):
     super(Plug, self).__init__()
 
     self.id = id
-    self.W = 0
+    self.W = -1
     self.color = 9
     self.zway = zway
     self.connected = None
@@ -21,9 +38,18 @@ class Plug(PubSub):
     self.zway.subscribe(self.on_power_update, 'devices.%d.instances.0.commandClasses.49.data.4' % id)
     self.zway.subscribe(self.on_connection_update, 'devices.%d.instances.0.commandClasses.37.data.level' % id)
 
+  def get_power(self):
+    if self.connected:
+      return self.W
+    else:
+      return -1
+
   def on_power_update(self, data, key):
+    old_W = self.W
     self.W = float(data['val']['value'])
-    self.publish()
+
+    if self.W != old_W:
+      self.publish()
 
   def on_fail_update(self, data, key):
     self.set_connected(not data['value'])
@@ -37,7 +63,9 @@ class Plug(PubSub):
     if connected != self.connected:
       self.connected = connected
       if not connected:
-        self.W = 0
+        self.W = -1
+      else:
+        self.configure()
       print self.id, 'connected?', self.connected
 
   def _set_option(self, register, value):
@@ -49,10 +77,10 @@ class Plug(PubSub):
 
     command = 'devices[%d].instances[0].commandClasses[112].Set(%d,%d,%d)' % \
         (self.id, register, value, last_param)
-    print 'run:', command
     self.zway.run(command)
 
   def configure(self):
+    print 'configure:', self.id
     self._set_option(40, 1) # report power changes immediately starting at 1 %
     self._set_option(42, 1) # report standard power changes starting at 1 %
     self._set_option(43, 255) # send reports only when polling
@@ -85,18 +113,24 @@ class EnergyWatch(energy_watch.EnergyWatch):
     self.zway.subscribe(self.update_devices, 'devices')
     self.zway.start()
 
-    self.values = []
+    self.values = [-1] * self.config.N_PLUGS
 
     self._configure_all()
+    self._request_from_all()
+
+    self._inspect_queue()
 
   def trigger(self, data=None, key=None):
     old_values = self.values
-    self.values = [plug.W for plug in self.plugs]
+    self.values = self.collect_values()
     if old_values != self.values:
       self.call_back()
 
   def call_back(self):
-    self.callback([plug.W for plug in self.plugs])
+    self.callback(self.collect_values())
+
+  def collect_values(self):
+    return [plug.get_power() for plug in self.plugs] + [-1] * max(0, self.config.N_PLUGS - len(self.plugs))
 
   def update_devices(self, devices, key):
     def is_plug(info):
@@ -128,6 +162,43 @@ class EnergyWatch(energy_watch.EnergyWatch):
     dt = datetime.timedelta(milliseconds=self.config.ZWAVE_RECONFIGURE_INTERVAL)
     loop = tornado.ioloop.IOLoop.instance()
     loop.add_timeout(dt, self._configure_all)
+
+  def _request_from_all(self):
+    for plug in self.plugs:
+      plug.refresh_power()
+
+    dt = datetime.timedelta(milliseconds=self.config.ZWAVE_REFRESH_INTERVAL)
+    loop = tornado.ioloop.IOLoop.instance()
+    loop.add_timeout(dt, self._request_from_all)
+
+  def _inspect_queue(self):
+    inspection = json.loads(self.zway._do_http_request('/ZWaveAPI/InspectQueue'))
+    result = {}
+    for line in inspection:
+      id = line[2]
+      if line[4]:
+        status = line[4].splitlines()[0]
+      else:
+        status = None
+
+      if status == 'Not delivered to recipient':
+        result[id] = False
+      elif status == 'Delivered':
+        result[id] = True
+
+    for id, status in result.items():
+      plug = self._get_or_create_plug(id)
+      if status == False:
+        if plug.connected:
+          print 'disconnecting due to failure', id
+          plug.set_connected(False)
+      else:
+        if not plug.connected:
+          print 'should be connected', id
+
+    dt = datetime.timedelta(milliseconds=self.config.ZWAVE_REFRESH_INTERVAL)
+    loop = tornado.ioloop.IOLoop.instance()
+    loop.add_timeout(dt, self._inspect_queue)
 
 if __name__ == '__main__':
   import tornado.ioloop
