@@ -1,0 +1,20 @@
+#!/bin/sh
+
+#If already done quit!
+
+if [ -f /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf.bak ];
+then
+	echo "Already updated!"
+	exit 0 
+fi
+
+echo "Updating font..."
+
+mv /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf.bak
+mv /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-Bold.ttf /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-Bold.ttf.bak
+cp  /usr/share/fonts/truetype/freefont/FreeSans.ttf /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf
+cp /usr/share/fonts/truetype/freefont/FreeSansBold.ttf /usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-Bold.ttf
+
+echo "Done!"
+
+
