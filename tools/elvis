@@ -76,18 +76,15 @@ case "$1" in
     
     touch $UPDATE_LOG
     
-    #TODO
-    #    scripts_to_run_dir=/home/you/Dropbox/scripts_to_run
-    #scripts_archive_dir=/home/you/Dropbox/scripts_archive
-    #shopt -s nullglob
-    #for script in "$scripts_to_run_dir"/*
-    #do
-    #    if [[ -x "$script" ]]; then
-    #        "$script"
-    #        mv "$script" "$scripts_archive_dir"/
-    #    fi
-    #done
+     #Path might change after updates
+    if [ -d "$NEW_PATH" ]; then
+      INSTALLATION_PATH=$NEW_PATH
+    else
+      INSTALLATION_PATH=$OLD_PATH
+      echo "NOTE: Elvis installed on old path in this system." 
+    fi
     
+    #Start the stuff...
     
     echo "Starting sensor server..."
     
@@ -125,6 +122,12 @@ case "$1" in
     pkill elvis_server.py -f
     pkill client.js -f
     
+    #Just in case there are duplicates
+    pkill elvis_server.py -f
+    pkill client.js -f
+    
+    #And in case the old name is used 
+    pkill wlt_server.py
     ;;
   *)
     echo "Usage: service elvis (start|stop)"
