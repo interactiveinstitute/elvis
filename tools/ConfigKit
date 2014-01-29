@@ -15,5 +15,6 @@ file2="/etc/hostname"
 sed -i "s/$OLD/$NEW/g" "$file1"
 sed -i "s/$OLD/$NEW/g" "$file2"
 
+MY_PATH="`dirname \"$0\"`"
 
-../updates/UpdateStartupScript
+$MY_PATH/../updates/UpdateStartupScript
