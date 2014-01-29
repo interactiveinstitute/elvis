@@ -35,7 +35,7 @@ case "$1" in
     if ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 
     then 
       echo "Network connection detected. Updating code... please wait!"
-      git pull
+      cd $INSTALLATION_PATH && git pull
     fi
     
     #Check for updates to run...
