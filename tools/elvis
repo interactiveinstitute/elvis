@@ -23,6 +23,19 @@ UPDATE_LOG=/var/log/elvis_updates.log
 case "$1" in
   start)
   
+    #Kill old stuff
+    #echo "Stopping Elvis"
+    pkill elvis_server.py -f
+    pkill client.js -f
+    
+    #Just in case there are duplicates
+    pkill elvis_server.py -f
+    pkill client.js -f
+    
+    #And in case the old name is used 
+    pkill wlt_server.py
+    
+  
     clear
     echo "Starting Elvis"
     
