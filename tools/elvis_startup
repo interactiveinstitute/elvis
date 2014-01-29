@@ -17,7 +17,7 @@ NEW_PATH=/home/pi/git/elvis
 NODE=/home/pi/node/0/bin/node
 NODE_PATH=/home/pi/node/0/lib/node_modules:$WLTL/node_modules
 
-UPDATE_LOG=/var/log/elvis
+UPDATE_LOG=/var/log/elvis_updates.log
 
 
 case "$1" in
@@ -59,8 +59,21 @@ case "$1" in
           "$script"
         fi
       done
+    else
+      echo "Looking for new update scripts..."
+      
+      for script in "$UPDATE_PATH"/*
+      do
+        if [ -x "$script" ]; then
+          if [ "$script" -nt "$UPDATE_LOG" ]; then
+          echo "Running $script..."
+          "$script"
+        fi
+      done
         
     fi
+    
+    touch $UPDATE_LOG
     
     #TODO
     #    scripts_to_run_dir=/home/you/Dropbox/scripts_to_run
