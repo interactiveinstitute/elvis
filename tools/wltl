@@ -12,19 +12,50 @@
 ### END INIT INFO
 
 WLTL=/home/pi/git/watt-lite-twist-lite
+ELVIS=/home/pi/git/elvis
+
 NODE=/home/pi/node/0/bin/node
 NODE_PATH=/home/pi/node/0/lib/node_modules:$WLTL/node_modules
 
 case "$1" in
   start)
-    echo "Starting wltl"
-    cd $WLTL/server 
-    python wlt_server.py > /dev/null &
+    echo "Starting Elvis"
+    
+    #New or old path
+    if [ -d "$ELVIS" ]; then
+      INSTALLATION_PATH=$ELVIS
+    else
+      INSTALLATION_PATH=$WLTL
+    fi
+    
+    clear
+    
+    echo "Starting sensor server..."
+    
+    cd $INSTALLATION_PATH/server 
+    python elvis_server.py > /dev/null &
     export NODE_PATH=$NODE_PATH
     echo $NODE_PATH
-    sleep 20
-    cd $WLTL/client && $NODE client.js > /dev/null &
-    clear
+    
+    echo "Waiting for server to start up..."
+    
+    cd $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
+    
+    #Wait and then check that the process is running. 
+    for I in 1 2 3 4 5
+    do
+        sleep 5
+        if ! [ -z "$(pgrep client.js -f)" ]
+        then
+          #Restart again. 
+          cd $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
+        else
+          #Everything seems ok!  
+          break
+        fi
+        
+    done
+    
     ;;
   stop)
     echo "Stopping wltl"
@@ -32,7 +63,7 @@ case "$1" in
     killall node
     ;;
   *)
-    echo "Usage: service wltl (start|stop)"
+    echo "Usage: service elvis (start|stop)"
     exit 1
     ;;
 esac
