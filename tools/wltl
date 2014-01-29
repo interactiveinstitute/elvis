@@ -11,8 +11,8 @@
 # Description:       Watt-Lite-Twist-Lite startup script
 ### END INIT INFO
 
-WLTL=/home/pi/git/watt-lite-twist-lite
-ELVIS=/home/pi/git/elvis
+OLD_PATH=/home/pi/git/watt-lite-twist-lite
+NEW_PATH=/home/pi/git/elvis
 
 NODE=/home/pi/node/0/bin/node
 NODE_PATH=/home/pi/node/0/lib/node_modules:$WLTL/node_modules
@@ -24,10 +24,10 @@ case "$1" in
     echo "Starting Elvis"
     
     #New or old path
-    if [ -d "$ELVIS" ]; then
-      INSTALLATION_PATH=$ELVIS
+    if [ -d "$NEW_PATH" ]; then
+      INSTALLATION_PATH=$NEW_PATH
     else
-      INSTALLATION_PATH=$WLTL
+      INSTALLATION_PATH=$OLD_PATH
       echo "NOTE: Elvis installed on old path in this system." 
     fi
     
@@ -74,7 +74,7 @@ case "$1" in
     
     ;;
   stop)
-    echo "Stopping wltl"
+    echo "Stopping Elvis"
     killall python
     killall node
     ;;
