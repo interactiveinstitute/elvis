@@ -41,12 +41,12 @@ class DataHandler(tornado.web.RequestHandler):
   def get(self):
     self.set_header('Content-Type', 'text/event-stream')
     self.set_header('Cache-Control', 'no-cache')
+
+    self.write('event: init\ndata:\n\n')
+    self.flush()
     
     if self.app.cached_power:
       self.send_power_data(self.app.cached_power)
-    else:
-      self.write('event: init\ndata:\n\n')
-      self.flush()
     
   def on_connection_close(self):
     self.app.unsubscribe(TwistApp.Topic.PowerValues, self.on_power_update)
@@ -108,10 +108,7 @@ class TwistApp(tornado.web.Application, util.Publisher):
       from energy_watch_zwave import EnergyWatch
     elif self.config.SOURCE == 'fake':
       from energy_watch_fake import EnergyWatch
-
-    self.watch_thread = threading.Thread(target=EnergyWatch, args=(config, self.on_update))
-    self.watch_thread.daemon = True
-    self.watch_thread.start()
+    self.watch = EnergyWatch(config, self.on_update)
 
     self.listen(config.HTTP_PORT, '0.0.0.0')
 
