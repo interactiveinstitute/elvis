@@ -17,6 +17,9 @@ NEW_PATH=/home/pi/git/elvis
 NODE=/home/pi/node/0/bin/node
 NODE_PATH=/home/pi/node/0/lib/node_modules:$WLTL/node_modules
 
+UPDATE_LOG=/var/log/elvis
+
+
 case "$1" in
   start)
   
@@ -31,6 +34,8 @@ case "$1" in
       echo "NOTE: Elvis installed on old path in this system." 
     fi
     
+    UPDATE_PATH=$INSTALLATION_PATH/updates
+    
     #Check for internet connection. 
     if ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 
     then 
@@ -41,11 +46,20 @@ case "$1" in
     #Check for updates to run...
     
     #Check if we have a logfile. 
-    if ! [ -e "/var/log/elvis" ] 
+    if ! [ -e "$UPDATE_LOG" ] 
     then
       echo "Running all update scripts..."
-      $INSTALLATION_PATH/updates/* &>> var/log/elvis
-      touch /var/log/elvis
+      touch $UPDATE_LOG
+      
+      for script in "$UPDATE_PATH"/*
+      do
+        if [[ -x "$script" ]]; then
+        
+          echo "Running $script..."
+          "$script"
+        fi
+      done
+        
     fi
     
     #TODO
