@@ -115,6 +115,7 @@ App.prototype.setServer = function(config, source) {
   this.used = [];
   this.wasConnected = [];
   for (var i = 0; i < config.nPlugs; i++) {
+    this.watts[i] = -1;
     this.used[i] = 0;
     this.wasConnected[i] = false;
   }

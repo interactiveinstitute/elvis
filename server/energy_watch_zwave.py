@@ -127,7 +127,8 @@ class EnergyWatch(energy_watch.EnergyWatch):
       self.call_back()
 
   def call_back(self):
-    self.callback(self.collect_values())
+    loop = tornado.ioloop.IOLoop.instance()
+    loop.add_callback(functools.partial(self.callback, self.collect_values()))
 
   def collect_values(self):
     return [plug.get_power() for plug in self.plugs] + [-1] * max(0, self.config.N_PLUGS - len(self.plugs))

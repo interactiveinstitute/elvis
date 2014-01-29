@@ -98,9 +98,9 @@ class TwistApp(tornado.web.Application, util.Publisher):
     loop = tornado.ioloop.IOLoop.instance()
     self.setup_input()
     if self.input_device:
-      self.thread = threading.Thread(target=self.read_input, args=(self.on_input,))
-      self.thread.daemon = True
-      self.thread.start()
+      self.input_thread = threading.Thread(target=self.read_input, args=(self.on_input,))
+      self.input_thread.daemon = True
+      self.input_thread.start()
     else:
       print 'no input device'
 
@@ -108,7 +108,10 @@ class TwistApp(tornado.web.Application, util.Publisher):
       from energy_watch_zwave import EnergyWatch
     elif self.config.SOURCE == 'fake':
       from energy_watch_fake import EnergyWatch
-    self.watch = EnergyWatch(config, self.on_update)
+
+    self.watch_thread = threading.Thread(target=EnergyWatch, args=(config, self.on_update))
+    self.watch_thread.daemon = True
+    self.watch_thread.start()
 
     self.listen(config.HTTP_PORT, '0.0.0.0')
 
@@ -164,16 +167,6 @@ class TwistApp(tornado.web.Application, util.Publisher):
 
   def on_input(self, event):
     self.publish(TwistApp.Topic.UserInput, event)
-
-  def measure_and_publish(self):
-    if not self.watch:
-      if self.config.SOURCE == 'plugwise':
-        from energy_watch_plugwise import EnergyWatch
-      elif self.config.SOURCE == 'zway':
-        from energy_watch_zwave import EnergyWatch
-      self.watch = EnergyWatch(config, self.on_update)
-    self.cached_power = []
-    self.publish(TwistApp.Topic.PowerValues, self.cached_power)
 
   def run(self):
     try: tornado.ioloop.IOLoop.instance().start()
