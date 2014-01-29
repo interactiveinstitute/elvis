@@ -303,6 +303,8 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   ctx.fillText('to set Wh', 0, size - 1 * 18);
 
   ctx.restore();
+
+  this.drawList(ctx, t, u);
 };
 
 App.prototype.draw[App.STATE.RESETTING] = function(ctx, t, u) {
@@ -407,6 +409,8 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   this.drawAmount(ctx, t, u, size, this.measure);
 
   ctx.restore();
+
+  this.drawList(ctx, t, u);
 };
 
 App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
