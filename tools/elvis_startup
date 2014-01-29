@@ -53,7 +53,7 @@ case "$1" in
       
       for script in "$UPDATE_PATH"/*
       do
-        if [[ -x "$script" ]]; then
+        if [ -x "$script" ]; then
         
           echo "Running $script..."
           "$script"
@@ -95,7 +95,7 @@ case "$1" in
           #Found.
           echo "Visualization running"
           sleep 5
-          clear
+          #clear
           break
         else
           #Not started try restarting!
