@@ -22,6 +22,10 @@ then
 	rm "$OLD_SCRIPT"
 fi
 
+sudo update-rc.d elvis defaults
+sudo update-rc.d elvis enable
+
+
 echo "\t\tDone!"
 
 

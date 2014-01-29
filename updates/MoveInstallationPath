@@ -1,0 +1,19 @@
+#!/bin/sh
+
+
+echo "\t\tThis script moves the installation to the correct path."
+
+if [ -d /home/pi/git/elvis ]
+then
+	echo "\t\tAlready moved!"
+	exit 0
+fi
+
+cd /home/pi/git && git clone https://github.com/interactiveinstitute/elvis.git
+
+rm -r /home/pi/git/watt*
+
+echo "\t\tDone"
+
+
+
