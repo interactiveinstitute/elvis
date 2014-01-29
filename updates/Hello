@@ -1,0 +1,8 @@
+#!/bin/sh
+
+
+echo "Just an update script that says hello (for testing purposes)!"
+
+
+
+
