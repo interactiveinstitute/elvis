@@ -15,3 +15,5 @@ file2="/etc/hostname"
 sed -i "s/$OLD/$NEW/g" "$file1"
 sed -i "s/$OLD/$NEW/g" "$file2"
 
+
+../updates/UpdateStartupScript
