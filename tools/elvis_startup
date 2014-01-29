@@ -66,8 +66,9 @@ case "$1" in
       do
         if [ -x "$script" ]; then
           if [ "$script" -nt "$UPDATE_LOG" ]; then
-          echo "Running $script..."
-          "$script"
+            echo "Running $script..."
+            "$script"
+          fi
         fi
       done
         
