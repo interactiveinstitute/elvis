@@ -23,33 +23,39 @@ window.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequ
 };
 
 var init = function(canvas) {
-  var request = new XMLHttpRequest();
-  request.open('GET', '/config');
-  request.onload = function() {
-    var config = JSON.parse(this.responseText);
-    var source = new EventSource('/data');
-    var app = new App(config, canvas, source);
-    
-    addEventListener('keydown', function(event) {
-      switch (event.keyCode) {
-        case App.KEY.DOWN:
-          app.twist(App.DIRECTION.DECREASE);
-          break;
-        case App.KEY.UP:
-          app.twist(App.DIRECTION.INCREASE);
-          break;
-        case App.KEY.SPACE:
-          app.onButtonDown();
-          break;
-      }
-    });
-    addEventListener('keyup', function(event) {
-      switch (event.keyCode) {
-        case App.KEY.SPACE:
-          app.onButtonUp();
-          break;
-      }
-    });
+  var app = new App(canvas);
+
+  var connect = function() {
+    var request = new XMLHttpRequest();
+    request.open('GET', '/config');
+    request.onload = function() {
+      var config = JSON.parse(this.responseText);
+      var source = new EventSource('/data');
+      app.setServer(config, source);
+      
+      addEventListener('keydown', function(event) {
+        switch (event.keyCode) {
+          case App.KEY.DOWN:
+            app.twist(App.DIRECTION.DECREASE);
+            break;
+          case App.KEY.UP:
+            app.twist(App.DIRECTION.INCREASE);
+            break;
+          case App.KEY.SPACE:
+            app.onButtonDown();
+            break;
+        }
+      });
+      addEventListener('keyup', function(event) {
+        switch (event.keyCode) {
+          case App.KEY.SPACE:
+            app.onButtonUp();
+            break;
+        }
+      });
+    };
+    request.send();
   };
-  request.send();
+
+  connect();
 };

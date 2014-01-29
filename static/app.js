@@ -85,8 +85,7 @@ App.DIRECTION = {
   DECREASE: 1
 };
 
-App.prototype.construct = function(config, canvas, source) {
-  this.config = config;
+App.prototype.construct = function(canvas) {
   this.canvas = canvas;
   
   this.drawUtil = {
@@ -96,10 +95,18 @@ App.prototype.construct = function(config, canvas, source) {
     cy: this.canvas.height / 2,
     colors: []
   };
+
+  this.setState(App.STATE.INITIALIZING);
+    
+  this.draw(+new Date);
+};
+
+App.prototype.setServer = function(config, source) {
+  this.config = config;
   this.config.colors.forEach(function(values, i) {
     this.drawUtil.colors[i] = values[1];
   }, this);
-  
+
   this.measure = this.config.watthour.min;
   this.input = Math.sqrt(this.measure / this.config.watthour.mapping);
 
@@ -139,19 +146,10 @@ App.prototype.construct = function(config, canvas, source) {
   source.addEventListener('release', function(event) {
     this.onButtonUp();
   }.bind(this));
-
-  this.setState(App.STATE.INITIALIZING);
-    
-  this.draw();
 };
 
 App.prototype.round = function(Wh) {
   return Wh.toFixed(3);
-};
-
-App.prototype.gray = function(opacity) {
-  var color = opacity ? Math.round(255 * opacity) : 0;
-  return 'rgb(' + color + ', ' + color + ', ' + color + ')';
 };
 
 App.prototype.updateUsed = function() {
@@ -263,11 +261,10 @@ App.prototype.draw = function(t) {
 
 App.prototype.draw[App.STATE.INITIALIZING] = function(ctx, t, u) {
   ctx.font = this.getFont(10);
-  var opacity = (t - u.t0) / 1000;
-  ctx.fillStyle = this.gray(Math.min(1, opacity));
+  ctx.fillStyle = '#ffffff';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('initialising…', u.cx, u.cy);
+  ctx.fillText('initialising...', u.cx, u.cy);
 };
 
 App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
