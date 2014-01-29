@@ -40,13 +40,25 @@ case "$1" in
     
     #Check for updates to run...
     
-    #Check if we have a settings folder. 
-    if ! [ -d "~/.elvis" ] 
+    #Check if we have a logfile. 
+    if ! [ -e "/var/log/elvis" ] 
     then
-      mkdir ~/.elvis
-      echo "Creating settings directory..."
+      echo "Running all update scripts..."
+      $INSTALLATION_PATH/updates/* &>> var/log/elvis
+      touch /var/log/elvis
     fi
+    
     #TODO
+    #    scripts_to_run_dir=/home/you/Dropbox/scripts_to_run
+    #scripts_archive_dir=/home/you/Dropbox/scripts_archive
+    #shopt -s nullglob
+    #for script in "$scripts_to_run_dir"/*
+    #do
+    #    if [[ -x "$script" ]]; then
+    #        "$script"
+    #        mv "$script" "$scripts_archive_dir"/
+    #    fi
+    #done
     
     
     echo "Starting sensor server..."
