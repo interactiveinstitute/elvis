@@ -39,6 +39,12 @@ case "$1" in
     fi
     
     #Check for updates to run...
+    
+    #Check if we have a settings folder. 
+    if ![ -d "~/.elvis" ]; 
+    then
+      mkdir ~/.elvis
+    fi
     #TODO
     
     
