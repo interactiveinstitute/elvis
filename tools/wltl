@@ -28,6 +28,7 @@ case "$1" in
       INSTALLATION_PATH=$ELVIS
     else
       INSTALLATION_PATH=$WLTL
+      echo "NOTE: Elvis installed on old path in this system." 
     fi
     
     #Check for internet connection. 
