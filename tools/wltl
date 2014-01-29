@@ -1,5 +1,5 @@
 #!/bin/sh
-# /etc/init.d/wltl
+# /etc/init.d/elvis
 
 ### BEGIN INIT INFO
 # Provides:          wltl
@@ -75,8 +75,9 @@ case "$1" in
     ;;
   stop)
     echo "Stopping Elvis"
-    killall python
-    killall node
+    pkill elvis_server.py -f
+    pkill client.js -f
+    
     ;;
   *)
     echo "Usage: service elvis (start|stop)"
