@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo "Input the kit number:"
+
+read KitN
+
+OLD="EnergyKitX"
+NEW="EnergyKit$KitN"
+
+echo "Setting the name to $NEW"
+
+file1="/etc/hosts"
+file2="/etc/hostname"
+
+sed -i "s/$OLD/$NEW/g" "$file1"
+sed -i "s/$OLD/$NEW/g" "$file2"
+
