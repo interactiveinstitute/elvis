@@ -13,6 +13,8 @@ cd /home/pi/git && git clone https://github.com/interactiveinstitute/elvis.git
 
 rm -r -f /home/pi/git/watt*
 
+pkill -f wlt_server.py
+
 echo "\t\tDone"
 
 
