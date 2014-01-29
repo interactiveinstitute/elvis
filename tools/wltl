@@ -63,6 +63,8 @@ case "$1" in
         then
           #Found.
           echo "Visualization running"
+          sleep 5
+          clear
           break
         else
           #Not started try restarting!
