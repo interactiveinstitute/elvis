@@ -19,6 +19,8 @@ NODE_PATH=/home/pi/node/0/lib/node_modules:$WLTL/node_modules
 
 case "$1" in
   start)
+  
+    clear
     echo "Starting Elvis"
     
     #New or old path
@@ -38,7 +40,6 @@ case "$1" in
     #Check for updates to run...
     #TODO
     
-    clear
     
     echo "Starting sensor server..."
     
@@ -61,9 +62,11 @@ case "$1" in
         if pgrep client.js -f >> null
         then
           #Found.
+          echo "Visualization running"
           break
         else
-          #Not started try restarting!  
+          #Not started try restarting!
+          echo "Failed to start visualization... retrying!"
           cd $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
         fi
         
