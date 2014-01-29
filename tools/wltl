@@ -52,7 +52,7 @@ case "$1" in
     cd $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
     
     echo "Starting visualization..."
-    d $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
+    $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
     
     #Wait and then check that the process is running. 
     for I in 1 2 3 4 5
