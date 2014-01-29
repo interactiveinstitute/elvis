@@ -205,8 +205,6 @@ App.prototype.twist = function(direction) {
   if (this.config.watthour.min <= newMeasure && newMeasure <= this.config.watthour.max) {
     this.input = newInput;
     this.measure = newMeasure;
-  } else {
-    console.log('limit, input would be', newInput, 'and measure', newMeasure);
   }
 };
 
