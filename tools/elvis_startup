@@ -1,5 +1,5 @@
 #!/bin/sh
-# /etc/init.d/elvis
+# /etc/init.d/elvis_startup
 
 ### BEGIN INIT INFO
 # Provides:          wltl
