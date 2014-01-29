@@ -11,7 +11,7 @@ fi
 
 cd /home/pi/git && git clone https://github.com/interactiveinstitute/elvis.git
 
-rm -r /home/pi/git/watt*
+rm -r -f /home/pi/git/watt*
 
 echo "\t\tDone"
 
