@@ -1,0 +1,28 @@
+#!/bin/sh
+
+#If already done quit!
+
+echo "\t\tInstalling new startup script!"
+
+#DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+SCRIPT=$(readlink -f $0)
+DIR=`dirname $SCRIPT`
+
+#echo $DIR
+
+STARTUP_SCRIPT=$DIR/../tools/elvis
+OLD_SCRIPT=/etc/init.d/wltl
+
+cp "$STARTUP_SCRIPT" /etc/init.d/
+
+
+if [ -e "$OLD_SCRIPT" ];
+then
+	echo "\t\tDeleting old startup script!"
+	rm "$OLD_SCRIPT"
+fi
+
+echo "\t\tDone!"
+
+
+

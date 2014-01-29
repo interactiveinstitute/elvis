@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo "\t\tThis update fixes old installations by removing the crontab for autoupdating code on boot!"
+crontab -r -u pi
+echo "\t\tDone!"
+
+
+
