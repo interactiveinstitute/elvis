@@ -1,0 +1,40 @@
+#!/bin/sh
+# /etc/init.d/wltl
+
+### BEGIN INIT INFO
+# Provides:          wltl
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Watt-Lite-Twist-Lite startup script
+# Description:       Watt-Lite-Twist-Lite startup script
+### END INIT INFO
+
+WLTL=/home/pi/git/watt-lite-twist-lite
+NODE=/home/pi/node/0/bin/node
+NODE_PATH=/home/pi/node/0/lib/node_modules:$WLTL/node_modules
+
+case "$1" in
+  start)
+    echo "Starting wltl"
+    cd $WLTL/server 
+    python wlt_server.py > /dev/null &
+    export NODE_PATH=$NODE_PATH
+    echo $NODE_PATH
+    sleep 20
+    cd $WLTL/client && $NODE client.js > /dev/null &
+    clear
+    ;;
+  stop)
+    echo "Stopping wltl"
+    killall python
+    killall node
+    ;;
+  *)
+    echo "Usage: service wltl (start|stop)"
+    exit 1
+    ;;
+esac
+
+exit 0
