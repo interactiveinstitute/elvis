@@ -135,7 +135,10 @@ class EnergyWatch(energy_watch.EnergyWatch):
   def update_devices(self, devices, key):
     def is_plug(info):
       return info['data']['manufacturerId']['value'] == 271 and info['data']['manufacturerProductType']['value'] == 1536
-    for id, info in devices.iteritems():
+    ids = devices.keys()
+    ids.sort()
+    for id in ids:
+      info = devices[id]
       if is_plug(info):
         self._get_or_create_plug(int(id))
 
