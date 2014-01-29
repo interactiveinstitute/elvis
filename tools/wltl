@@ -46,11 +46,8 @@ case "$1" in
     cd $INSTALLATION_PATH/server 
     python elvis_server.py > /dev/null &
     export NODE_PATH=$NODE_PATH
-    echo $NODE_PATH
+    #echo $NODE_PATH
     
-    echo "Waiting for server to start up..."
-    
-    cd $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
     
     echo "Starting visualization..."
     cd $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
