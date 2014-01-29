@@ -34,7 +34,7 @@ case "$1" in
     #Check for internet connection. 
     if ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 
     then 
-      echo "Network connection detected. Updateing code... please wait!"
+      echo "Network connection detected. Updating code... please wait!"
       git pull
     fi
     
