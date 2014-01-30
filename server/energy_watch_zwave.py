@@ -175,7 +175,11 @@ class EnergyWatch(energy_watch.EnergyWatch):
     loop.add_timeout(dt, self._request_from_all)
 
   def _inspect_queue(self):
-    inspection = json.loads(self.zway._do_http_request('/ZWaveAPI/InspectQueue'))
+    try:
+      inspection = json.loads(self.zway._do_http_request('/ZWaveAPI/InspectQueue'))
+    except TypeError:
+      return
+    
     result = {}
     for line in inspection:
       id = line[2]
