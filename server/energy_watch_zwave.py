@@ -177,7 +177,14 @@ class EnergyWatch(energy_watch.EnergyWatch):
   def _inspect_queue(self):
     try:
       inspection = json.loads(self.zway._do_http_request('/ZWaveAPI/InspectQueue'))
+
+      dt = datetime.timedelta(milliseconds=self.config.ZWAVE_REFRESH_INTERVAL)
+      loop = tornado.ioloop.IOLoop.instance()
+      loop.add_timeout(dt, self._inspect_queue)
     except TypeError:
+      dt = datetime.timedelta(milliseconds=self.config.ZWAVE_REFRESH_INTERVAL)
+      loop = tornado.ioloop.IOLoop.instance()
+      loop.add_timeout(dt, self._inspect_queue)
       return
     
     result = {}
@@ -203,9 +210,6 @@ class EnergyWatch(energy_watch.EnergyWatch):
         if not plug.connected:
           print 'should be connected', id
 
-    dt = datetime.timedelta(milliseconds=self.config.ZWAVE_REFRESH_INTERVAL)
-    loop = tornado.ioloop.IOLoop.instance()
-    loop.add_timeout(dt, self._inspect_queue)
 
 if __name__ == '__main__':
   import tornado.ioloop
