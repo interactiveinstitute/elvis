@@ -142,10 +142,17 @@ class EnergyWatch(energy_watch.EnergyWatch):
       if is_plug(info):
         self._get_or_create_plug(int(id))
 
-  def _get_or_create_plug(self, id):
+  def _get_plug(self, id):
     results = [plug for plug in self.plugs if plug.id == id]
     if len(results) == 1:
       return results[0]
+    else:
+      return None
+
+  def _get_or_create_plug(self, id):
+    plug = self._get_plug(id)
+    if not plug:
+      return plug
     else:
       plug = Plug(id, self.zway)
       plug.set_color(self.config.COLORS[len(self.plugs)][2])
@@ -201,15 +208,15 @@ class EnergyWatch(energy_watch.EnergyWatch):
         result[id] = True
 
     for id, status in result.items():
-      plug = self._get_or_create_plug(id)
-      if status == False:
-        if plug.connected:
+      plug = self._get_plug(id)
+      if plug:
+        if status == False:
+          if plug.connected:
           print 'disconnecting due to failure', id
           plug.set_connected(False)
-      else:
-        if not plug.connected:
+        else:
+          if not plug.connected:
           print 'should be connected', id
-
 
 if __name__ == '__main__':
   import tornado.ioloop
