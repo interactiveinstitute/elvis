@@ -151,7 +151,7 @@ class EnergyWatch(energy_watch.EnergyWatch):
 
   def _get_or_create_plug(self, id):
     plug = self._get_plug(id)
-    if not plug:
+    if plug:
       return plug
     else:
       plug = Plug(id, self.zway)
