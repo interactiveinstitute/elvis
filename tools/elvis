@@ -19,6 +19,7 @@ NODE_PATH=/home/pi/node/0/lib/node_modules:$WLTL/node_modules
 
 UPDATE_LOG=/var/log/elvis_updates.log
 
+#PYTHONPATH="${PYTHONPATH}:/home/pi/git/server
 
 case "$1" in
   start)
