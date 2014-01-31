@@ -51,44 +51,44 @@ case "$1" in
     UPDATE_PATH=$INSTALLATION_PATH/updates
     
     #Check for internet connection. 
-    if ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 
-    then 
-      echo "Network connection detected. Updating code... please wait!"
-      cd $INSTALLATION_PATH && git pull
-    fi
+    #if ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 
+    #then 
+    #  echo "Network connection detected. Updating code... please wait!"
+    #  cd $INSTALLATION_PATH && git pull
+    #fi
     
     #Check for updates to run...
     
     #Check if we have a logfile. 
-    if ! [ -e "$UPDATE_LOG" ] 
-    then
-      echo "Running all update scripts..."
-      touch $UPDATE_LOG
+    #if ! [ -e "$UPDATE_LOG" ] 
+    #then
+    #  echo "Running all update scripts..."
+    #  touch $UPDATE_LOG
       
-      for script in "$UPDATE_PATH"/*
-      do
-        if [ -x "$script" ]; then
+    #  for script in "$UPDATE_PATH"/*
+    #  do
+    #    if [ -x "$script" ]; then
         
-          echo "\tRunning $script..."
-          "$script"
-          touch $UPDATE_LOG
-        fi
-      done
-    else
-      echo "Looking for new update scripts..."
+    #      echo "\tRunning $script..."
+    #      "$script"
+    #      touch $UPDATE_LOG
+    #    fi
+    #  done
+    #else
+    #  echo "Looking for new update scripts..."
       
-      for script in "$UPDATE_PATH"/*
-      do
-        if [ -x "$script" ]; then
-          if [ "$script" -nt "$UPDATE_LOG" ]; then
-            echo "\tRunning $script..."
-            "$script"
-            touch $UPDATE_LOG
-          fi
-        fi
-      done
+    #  for script in "$UPDATE_PATH"/*
+    #  do
+    #    if [ -x "$script" ]; then
+    #      if [ "$script" -nt "$UPDATE_LOG" ]; then
+    #        echo "\tRunning $script..."
+    #        "$script"
+    #        touch $UPDATE_LOG
+    #      fi
+    #    fi
+    #  done
         
-    fi
+    #fi
     
     
      #Path might change after updates
