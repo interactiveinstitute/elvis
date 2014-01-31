@@ -2,6 +2,8 @@
 
 #If already done quit!
 
+#New start up 2014-01-31
+
 echo "\t\tInstalling new startup script!"
 
 #DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
