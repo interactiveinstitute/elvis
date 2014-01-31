@@ -216,7 +216,7 @@ class EnergyWatch(energy_watch.EnergyWatch):
           plug.set_connected(False)
         else:
           if not plug.connected:
-          print 'should be connected', id
+            print 'should be connected', id
 
 if __name__ == '__main__':
   import tornado.ioloop
