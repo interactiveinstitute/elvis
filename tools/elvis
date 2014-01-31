@@ -70,6 +70,7 @@ case "$1" in
         
           echo "\tRunning $script..."
           "$script"
+          touch $UPDATE_LOG
         fi
       done
     else
@@ -81,13 +82,13 @@ case "$1" in
           if [ "$script" -nt "$UPDATE_LOG" ]; then
             echo "\tRunning $script..."
             "$script"
+            touch $UPDATE_LOG
           fi
         fi
       done
         
     fi
     
-    touch $UPDATE_LOG
     
      #Path might change after updates
     if [ -d "$NEW_PATH" ]; then
