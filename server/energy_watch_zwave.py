@@ -134,7 +134,7 @@ class EnergyWatch(energy_watch.EnergyWatch):
 
   def update_devices(self, devices, key):
     def is_plug(info):
-      return (info['data']['manufacturerId']['value'] == 271 and info['data']['manufacturerProductType']['value'] == 1536) or (info['data']['deviceTypeString'] == 'Binary Power Switch')
+      return (info['data']['manufacturerId']['value'] == 271 and info['data']['manufacturerProductType']['value'] == 1536) or (info['data']['deviceTypeString']['value'] == 'Binary Power Switch')
     ids = devices.keys()
     ids.sort()
     for id in ids:
