@@ -1,0 +1,153 @@
+#!/bin/sh
+# /etc/init.d/elvis
+
+### BEGIN INIT INFO
+# Provides:          wltl
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Watt-Lite-Twist-Lite startup script
+# Description:       Watt-Lite-Twist-Lite startup script
+### END INIT INFO
+
+OLD_PATH=/home/pi/git/watt-lite-twist-lite
+NEW_PATH=/home/pi/git/elvis
+
+NODE=/home/pi/node/0/bin/node
+NODE_PATH=/home/pi/node/0/lib/node_modules:$WLTL/node_modules
+
+UPDATE_LOG=/var/log/elvis_updates.log
+
+#PYTHONPATH="${PYTHONPATH}:/home/pi/git/server
+
+case "$1" in
+  start)
+  
+    #Kill old stuff
+    #echo "Stopping Elvis"
+    pkill elvis_server.py -f
+    pkill client.js -f
+    
+    #Just in case there are duplicates
+    pkill elvis_server.py -f
+    pkill client.js -f
+    
+    #And in case the old name is used 
+    pkill wlt_server.py
+    
+  
+    clear
+    echo "Starting Elvis"
+    
+    #New or old path
+    if [ -d "$NEW_PATH" ]; then
+      INSTALLATION_PATH=$NEW_PATH
+    else
+      INSTALLATION_PATH=$OLD_PATH
+      echo "NOTE: Elvis installed on old path in this system." 
+    fi
+    
+    UPDATE_PATH=$INSTALLATION_PATH/updates
+    
+    #Check for internet connection. 
+    #if ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 
+    #then 
+    #  echo "Network connection detected. Updating code... please wait!"
+    #  cd $INSTALLATION_PATH && git pull
+    #fi
+    
+    #Check for updates to run...
+    
+    #Check if we have a logfile. 
+    #if ! [ -e "$UPDATE_LOG" ] 
+    #then
+    #  echo "Running all update scripts..."
+    #  touch $UPDATE_LOG
+      
+    #  for script in "$UPDATE_PATH"/*
+    #  do
+    #    if [ -x "$script" ]; then
+        
+    #      echo "\tRunning $script..."
+    #      "$script"
+    #      touch $UPDATE_LOG
+    #    fi
+    #  done
+    #else
+    #  echo "Looking for new update scripts..."
+      
+    #  for script in "$UPDATE_PATH"/*
+    #  do
+    #    if [ -x "$script" ]; then
+    #      if [ "$script" -nt "$UPDATE_LOG" ]; then
+    #        echo "\tRunning $script..."
+    #        "$script"
+    #        touch $UPDATE_LOG
+    #      fi
+    #    fi
+    #  done
+        
+    #fi
+    
+    
+     #Path might change after updates
+    if [ -d "$NEW_PATH" ]; then
+      INSTALLATION_PATH=$NEW_PATH
+    else
+      INSTALLATION_PATH=$OLD_PATH
+      echo "NOTE: Elvis installed on old path in this system." 
+    fi
+    
+    #Start the stuff...
+    
+    echo "Starting sensor server..."
+    
+    cd $INSTALLATION_PATH/server 
+    /usr/bin/screen -S elvis_server -d -m python elvis_server.py 
+    export NODE_PATH=$NODE_PATH
+    #echo $NODE_PATH
+    
+    
+    echo "Starting visualization..."
+    cd $INSTALLATION_PATH/client && /usr/bin/screen -S elvis_client -d -m $NODE client.js
+    
+    #Wait and then check that the process is running. 
+    for I in 1 2 3 4 5
+    do
+        sleep 5
+        if pgrep client.js -f > /dev/null
+        then
+          #Found.
+          echo "Visualization running"
+          sleep 5
+          #clear
+          break
+        else
+          #Not started try restarting!
+          echo "Failed to start visualization... retrying!"
+          cd $INSTALLATION_PATH/client && /usr/bin/screen -S elvis_client -d -m $NODE client.js
+        fi
+        
+    done
+    
+    ;;
+  stop)
+    echo "Stopping Elvis"
+    pkill elvis_server.py -f
+    pkill client.js -f
+    
+    #Just in case there are duplicates
+    pkill elvis_server.py -f
+    pkill client.js -f
+    
+    #And in case the old name is used 
+    pkill wlt_server.py
+    ;;
+  *)
+    echo "Usage: service elvis (start|stop)"
+    exit 1
+    ;;
+esac
+
+exit 0

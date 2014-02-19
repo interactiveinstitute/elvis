@@ -1,0 +1,3 @@
+#!/bin/sh
+echo Remounting rootFS for R/W! Use \"ipe-ro\" to lock it again!
+sudo mount / -o remount,rw

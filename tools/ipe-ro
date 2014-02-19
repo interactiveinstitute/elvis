@@ -1,0 +1,3 @@
+#!/bin/sh
+echo Remounting rootFS for R/O!
+sudo mount / -o remount,ro
