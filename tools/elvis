@@ -51,7 +51,7 @@ case "$1" in
     UPDATE_PATH=$INSTALLATION_PATH/updates
     
     #Check for internet connection. 
-    #if ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > /dev/null 
+    #if ping -q -w 1 -c 1 `ip r | grep default | cut -d ' ' -f 3` > null 
     #then 
     #  echo "Network connection detected. Updating code... please wait!"
     #  cd $INSTALLATION_PATH && git pull
@@ -104,13 +104,13 @@ case "$1" in
     echo "Starting sensor server..."
     
     cd $INSTALLATION_PATH/server 
-    python elvis_server.py > /dev/null &
+    python elvis_server.py > null &
     export NODE_PATH=$NODE_PATH
     #echo $NODE_PATH
     
     
     echo "Starting visualization..."
-    cd $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
+    cd $INSTALLATION_PATH/client && $NODE client.js > null &
     
     #Wait and then check that the process is running. 
     for I in 1 2 3 4 5
@@ -126,7 +126,7 @@ case "$1" in
         else
           #Not started try restarting!
           echo "Failed to start visualization... retrying!"
-          cd $INSTALLATION_PATH/client && $NODE client.js > /dev/null &
+          cd $INSTALLATION_PATH/client && $NODE client.js > null &
         fi
         
     done
