@@ -1,0 +1,10 @@
+#! /bin/sh
+
+sudo apt-get update
+sudo apt-get install fbi
+
+sudo cp ./asplashscreen /etc/init.d
+
+sudo insserv /etc/init.d/asplashscreen
+
+
