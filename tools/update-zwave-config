@@ -1,0 +1,7 @@
+#!/bin/sh
+echo "Now making the current settings done to the zwave persistant."
+sudo mount / -o remount,rw
+sudo cp /tmp/config/* /opt/ro/z-way-server/config -r
+sudo mount / -o remount,ro
+
+
