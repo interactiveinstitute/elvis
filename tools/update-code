@@ -1,0 +1,8 @@
+#!/bin/sh
+
+ipe-rw
+sudo git pull
+ipe-ro
+sudo service elvis start
+
+
