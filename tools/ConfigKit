@@ -15,8 +15,8 @@ file2="/etc/hostname"
 sed -i "s/$OLD/$NEW/g" "$file1"
 sed -i "s/$OLD/$NEW/g" "$file2"
 
-MY_PATH="`dirname \"$0\"`"
+#MY_PATH="`dirname \"$0\"`"
 
-$MY_PATH/../updates/UpdateStartupScript
+#$MY_PATH/../updates/UpdateStartupScript
 
-service elvis start
+#service elvis start

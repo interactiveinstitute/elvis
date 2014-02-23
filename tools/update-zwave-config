@@ -1,7 +1,33 @@
 #!/bin/sh
+
+echo "_____________________________________________________________________"
+echo "Please make sure that you have configred the plugs before proceeding!"
+echo " "
+echo "This is done on http://IP:8083/expert"
+echo "1) Assosiate them under network management"
+echo "   by clicking include device and then trippel"
+echo "   clicking the plug to assosssiate. "
+echo " "
+echo "2) Also make sure the they are set to active in"
+echo "   the settings under device configuration. "
+echo "   Save and apply the configuration"
+echo "____________________________________________________________________ "
+echo " "
+
+
+read -p "Continue? (y/n) " RESP
+if [ "$RESP" = "y" ]; then
+  echo "..."
+else
+  exit 0
+fi
+
+
+
 echo "Now making the current settings done to the zwave persistant."
 sudo mount / -o remount,rw
 sudo cp /tmp/config/* /opt/ro/z-way-server/config -r
+sudo cp /tmp/config.xml /opt/ro/z-way-server/config.xml
 sudo mount / -o remount,ro
 
 

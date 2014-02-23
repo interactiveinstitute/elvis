@@ -13,7 +13,7 @@
 
 do_start () {
 
-    /usr/bin/fbi -T 1 -noverbose -a /home/pi/git/elvis/tools/spashscreen/splash.png
+    /usr/bin/fbi -T 1 -noverbose -a /home/pi/git/elvis/tools/splashscreen/splash-01.png
     exit 0
 }
 

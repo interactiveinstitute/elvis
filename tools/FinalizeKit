@@ -1,0 +1,6 @@
+#!/bin/sh
+
+ConfigKit
+update-zwave-config
+
+
