@@ -1,6 +1,14 @@
 #!/bin/sh
 
-ConfigKit
-update-zwave-config
+#DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+DIR=$( cd "$( dirname "$0" )" && pwd )
 
 
+$DIR/ipe-rw
+sudo $DIR/ConfigKit
+#ipe-ro
+$DIR/update-zwave-config
+$DIR/ipe-rw
+echo " "
+sudo $DIR/ForwardDate
+$DIR/ipe-ro
