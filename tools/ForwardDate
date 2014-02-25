@@ -1,0 +1,5 @@
+#!/bin/sh
+echo "Setting RPI clock 2 days forward to ensure Zwave data is in the past when rebooting"
+date --date="next day" +"%Y-%m-%d %H:%M:%S" > /etc/fake-hwclock.data
+
+
