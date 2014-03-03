@@ -222,14 +222,19 @@ App.prototype.onButtonDown = function() {
   switch (this.state) {
     case App.STATE.PROGRESS:
     case App.STATE.FINISHED:
+      this.pressingReset = true;
       this.startResetting();
       break;
     case App.STATE.WINDING:
+    case App.STATE.INTRO:
+      if (!this.pressingReset)
+        this.state = App.STATE.WINDING;
       if (!this.buttonPressed) this.buttonPressed = +new Date;
   }
 };
 
 App.prototype.onButtonUp = function() {
+  this.pressingReset = false;
   switch (this.state) {
     case App.STATE.RESETTING:
       this.stopResetting();
