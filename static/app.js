@@ -167,7 +167,11 @@ App.prototype.updateUsed = function() {
     var watts = this.watts;
     for (var i = 0; i < this.watts.length; i++) {
       if (watts[i] != -1) {
-        var add = watts[i] / 1000.0 / 3600.0;
+        // Every hour, add watts[i] * 1 Wh.
+        // Every second, add watts[i] / 60 / 60 Wh.
+        // Every millisecond, add wats[i] / 1000 / 60 / 60 Wh.
+        var WhPerMs = watts[i] / 3600000.0;
+        var add = WhPerMs * millis;
         this.used[i] = (this.used[i] || 0) + add;
       }
     }
@@ -243,6 +247,7 @@ App.prototype.onButtonUp = function() {
       delete this.firstData;
       this.used = this.used.map(function() { return 0; });
       this.start = +new Date;
+      this.lastUsedUpdate = 0;
       this.setState(App.STATE.PROGRESS);
   }
 };
