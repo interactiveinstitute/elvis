@@ -119,7 +119,12 @@ App.prototype.setServer = function(config, source) {
     this.used[i] = 0;
     this.wasConnected[i] = false;
   }
-  
+
+  // In most cases, the maximum amount of watthours cannot be reached exactly.
+  // Therefore, we assume the maximum when the value should actually be just
+  // over the maximum. The previous value is then stored as beforeMaximum.
+  this.beforeMaximum = -1;
+
   source.addEventListener('init', function(event) {
     this.setState(App.STATE.INTRO);
   }.bind(this));
@@ -203,7 +208,12 @@ App.prototype.twist = function(direction) {
   newMeasure = Math.round(newMeasure * 10) / 10;
   if (this.config.watthour.min <= newMeasure && newMeasure <= this.config.watthour.max) {
     this.input = newInput;
-    this.measure = newMeasure;
+    this.measure = (this.beforeMaximum == -1) ? newMeasure : this.beforeMaximum;
+    this.beforeMaximum = -1;
+  } else if (newMeasure > this.config.watthour.max && this.beforeMaximum == -1) {
+    this.input = newInput;
+    this.beforeMaximum = this.measure;
+    this.measure = this.config.watthour.max;
   }
 };
 
