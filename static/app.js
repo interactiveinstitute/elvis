@@ -527,6 +527,10 @@ App.prototype.drawSlices = function(ctx, t, u, size) {
   var angle = -Math.PI / 2;
   for (var i = this.used.length - 1; i >= 0; i--) {
     var add = this.used[i] / this.measure * 2 * Math.PI;
+    if (add == 2 * Math.PI)
+      angle = 0;
+    else if (add == 0)
+      continue;
     ctx.beginPath();
     ctx.fillStyle = u.colors[i];
     ctx.moveTo(u.cx, u.cy);
