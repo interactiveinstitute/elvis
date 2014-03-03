@@ -46,7 +46,7 @@ var easeOutElastic = function(t, b, c, d, a, p) {
   d = 1; // duration
   a = 1; // amplitude
   p = .3; // period
- 
+
   if (t == 0) return b;
   if ((t /= d) == 1) return b + c;
   if (!p) p = d * .3;
@@ -87,7 +87,7 @@ App.DIRECTION = {
 
 App.prototype.construct = function(canvas) {
   this.canvas = canvas;
-  
+
   this.drawUtil = {
     width: this.canvas.width,
     height: this.canvas.height,
@@ -97,7 +97,7 @@ App.prototype.construct = function(canvas) {
   };
 
   this.setState(App.STATE.INITIALIZING);
-    
+
   this.draw(+new Date);
 };
 
@@ -119,7 +119,12 @@ App.prototype.setServer = function(config, source) {
     this.used[i] = 0;
     this.wasConnected[i] = false;
   }
-  
+
+  // In most cases, the maximum amount of watthours cannot be reached exactly.
+  // Therefore, we assume the maximum when the value should actually be just
+  // over the maximum. The previous value is then stored as beforeMaximum.
+  this.beforeMaximum = -1;
+
   source.addEventListener('init', function(event) {
     this.setState(App.STATE.INTRO);
   }.bind(this));
@@ -162,7 +167,11 @@ App.prototype.updateUsed = function() {
     var watts = this.watts;
     for (var i = 0; i < this.watts.length; i++) {
       if (watts[i] != -1) {
-        var add = watts[i] / 1000.0 / 3600.0;
+        // Every hour, add watts[i] * 1 Wh.
+        // Every second, add watts[i] / 60 / 60 Wh.
+        // Every millisecond, add wats[i] / 1000 / 60 / 60 Wh.
+        var WhPerMs = watts[i] / 3600000.0;
+        var add = WhPerMs * millis;
         this.used[i] = (this.used[i] || 0) + add;
       }
     }
@@ -195,15 +204,21 @@ App.prototype.twist = function(direction) {
 
   if (direction == App.DIRECTION.DECREASE) var factor = -1;
   else if (direction == App.DIRECTION.INCREASE) var factor = 1;
-  
+
   if (this.countdown) clearTimeout(this.countdown);
-  
+
   var newInput = this.input + factor;
   var newMeasure = this.config.watthour.mapping * Math.pow(newInput, 2);
   newMeasure = Math.round(newMeasure * 10) / 10;
   if (this.config.watthour.min <= newMeasure && newMeasure <= this.config.watthour.max) {
     this.input = newInput;
-    this.measure = newMeasure;
+    this.measure = (this.beforeMaximum == -1) ? newMeasure : this.beforeMaximum;
+    this.beforeMaximum = -1;
+  } else if (newMeasure > this.config.watthour.max && this.beforeMaximum == -1) {
+    this.input = newInput;
+    this.beforeMaximum = this.measure;
+    this.measure = this.config.watthour.max;
+    console.log('yes', this.input, this.measure, this.beforeMaximum);
   }
 };
 
@@ -211,14 +226,19 @@ App.prototype.onButtonDown = function() {
   switch (this.state) {
     case App.STATE.PROGRESS:
     case App.STATE.FINISHED:
+      this.pressingReset = true;
       this.startResetting();
       break;
     case App.STATE.WINDING:
+    case App.STATE.INTRO:
+      if (!this.pressingReset)
+        this.state = App.STATE.WINDING;
       if (!this.buttonPressed) this.buttonPressed = +new Date;
   }
 };
 
 App.prototype.onButtonUp = function() {
+  this.pressingReset = false;
   switch (this.state) {
     case App.STATE.RESETTING:
       this.stopResetting();
@@ -227,6 +247,7 @@ App.prototype.onButtonUp = function() {
       delete this.firstData;
       this.used = this.used.map(function() { return 0; });
       this.start = +new Date;
+      this.lastUsedUpdate = 0;
       this.setState(App.STATE.PROGRESS);
   }
 };
@@ -242,13 +263,13 @@ App.prototype.stopResetting = function() {
 
 App.prototype.draw = function(t) {
   requestAnimationFrame(this.draw.bind(this));
-  
+
   var changed = this.state != this.previousState;
   if (changed) {
     this.drawUtil.t0 = t;
     this.previousState = this.state;
   }
-  
+
   var ctx = this.canvas.getContext('2d');
 
   ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -275,7 +296,7 @@ App.prototype.draw[App.STATE.INTRO] = function(ctx, t, u) {
   } else var scale = 1;
 
   var size = this.getSizeForEnergy(this.measure || this.config.watthour.min);
-  
+
   ctx.beginPath();
   ctx.lineWidth = this.config.display.lineWidth * scale;
   ctx.fillStyle = '#000';
@@ -426,7 +447,7 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.scale(scale, scale);
-  
+
   ctx.beginPath();
   ctx.fillStyle = '#fff';
   ctx.moveTo(0, 0);
@@ -441,7 +462,7 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.scale(scale, scale);
-  
+
   this.drawAmount(ctx, t, u, size, this.measure - this.used.reduce(sum));
 
   ctx.restore();
@@ -451,9 +472,9 @@ App.prototype.draw[App.STATE.PROGRESS] = function(ctx, t, u) {
 
 App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   var size = this.getSizeForEnergy(this.measure);
-  
+
   this.drawSlices(ctx, t, u, size);
-  
+
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(Math.PI / 4)
@@ -463,7 +484,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.textBaseline = 'bottom';
   ctx.fillText(this.round(this.measure), 0, -size - 20);
   ctx.restore();
-  
+
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(Math.PI / 4)
@@ -473,12 +494,12 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.textBaseline = 'bottom';
   ctx.fillText('Wh used', 0, -size - 5);
   ctx.restore();
-  
+
   var totalMinutes = (this.end - this.start) / 1000 / 60;
   var hours = Math.floor(totalMinutes / 60);
   var minutes = Math.round(totalMinutes % 60);
   var time = + hours + ':' + ((minutes < 10) ? '0' : '') + minutes;
-  
+
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(5 * Math.PI / 4)
@@ -488,7 +509,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.textBaseline = 'bottom';
   ctx.fillText(time, 0, -size - 20);
   ctx.restore();
-  
+
   ctx.save();
   ctx.translate(u.cx, u.cy);
   ctx.rotate(5 * Math.PI / 4)
@@ -506,6 +527,10 @@ App.prototype.drawSlices = function(ctx, t, u, size) {
   var angle = -Math.PI / 2;
   for (var i = this.used.length - 1; i >= 0; i--) {
     var add = this.used[i] / this.measure * 2 * Math.PI;
+    if (add == 2 * Math.PI)
+      angle = 0;
+    else if (add == 0)
+      continue;
     ctx.beginPath();
     ctx.fillStyle = u.colors[i];
     ctx.moveTo(u.cx, u.cy);
@@ -573,7 +598,7 @@ App.prototype.getSizeForEnergy = function(energy) {
   var maxSize = this.canvas.height / 2 - this.config.display.padding - this.config.display.lineWidth;
   var minSize = this.config.display.minSize * maxSize;
   var maxEnergy = this.config.watthour.max;
-  
+
   return minSize + Math.sqrt(energy / maxEnergy) * (maxSize - minSize);
 };
 
