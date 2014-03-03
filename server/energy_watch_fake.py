@@ -25,12 +25,10 @@ class EnergyWatch(energy_watch.EnergyWatch):
   def __init__(self, config, callback):
     self.callback = callback
 
-    #self.values = [1000 for color in config.COLORS][:config.N_PLUGS]
-    self.values = [1000, 0, 0, 0, 0]
-    #self.values[random.randint(0, config.N_PLUGS - 1)] = -1
+    self.values = [1000 for color in config.COLORS][:config.N_PLUGS]
+    self.values[random.randint(0, config.N_PLUGS - 1)] = -1
 
-    #self.trigger()
-    self.callback(self.values)
+    self.trigger()
 
   def trigger(self):
     index = random.randrange(len(self.values))
