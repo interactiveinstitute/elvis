@@ -131,6 +131,7 @@ App.prototype.setServer = function(config, source) {
   source.addEventListener('powerdata', function(event) {
     var data = JSON.parse(event.data).map(parseFloat);
     this.watts = data;
+    delete this.stateData.lastDrawnAmount;
 
     for (var i = 0; i < this.watts.length; i++)
       if (this.watts[i] != -1) this.wasConnected[i] = true;
@@ -147,9 +148,11 @@ App.prototype.setServer = function(config, source) {
     this.twist(App.DIRECTION.DECREASE);
   }.bind(this));
   source.addEventListener('press', function(event) {
+    delete this.stateData.lastDrawnAmount;
     this.onButtonDown();
   }.bind(this));
   source.addEventListener('release', function(event) {
+    delete this.stateData.lastDrawnAmount;
     this.onButtonUp();
   }.bind(this));
 };
@@ -193,6 +196,7 @@ App.prototype.setState = function(state) {
   this.previousState = this.state || App.STATE.IDLE;
   this.drawUtil.t0 = +new Date;
   this.state = state;
+  this.stateData = {};
 };
 
 App.prototype.twist = function(direction) {
@@ -218,7 +222,6 @@ App.prototype.twist = function(direction) {
     this.input = newInput;
     this.beforeMaximum = this.measure;
     this.measure = this.config.watthour.max;
-    console.log('yes', this.input, this.measure, this.beforeMaximum);
   }
 };
 
@@ -268,16 +271,20 @@ App.prototype.draw = function(t) {
     this.previousState = this.state;
   }
 
-  var ctx = this.canvas.getContext('2d');
+  if (this.state == App.STATE.WINDING && this.stateData.lastDrawnAmount == this.measure) {
+    // Skip drawing
+  } else {
+    var ctx = this.canvas.getContext('2d');
 
-  // ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); doesn't work
-  // on Raspberry Pi.
-  ctx.beginPath();
-  ctx.rect(0, 0, this.canvas.width, this.canvas.height);
-  ctx.fillStyle = 'black';
-  ctx.fill();
+    // ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); doesn't work
+    // on Raspberry Pi.
+    ctx.beginPath();
+    ctx.rect(0, 0, this.canvas.width, this.canvas.height);
+    ctx.fillStyle = 'black';
+    ctx.fill();
 
-  this.draw[this.state].bind(this)(ctx, t, this.drawUtil);
+    this.draw[this.state].bind(this)(ctx, t, this.drawUtil);
+  }
 
   requestAnimationFrame(this.draw.bind(this));
 };
@@ -384,10 +391,13 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
   var max = this.config.startAnimation.scale;
   if (0 <= dt && dt < duration) {
     var scale = map(easeOutElastic, dt, 0, duration, 1, max);
+    delete this.stateData.lastDrawnAmount;
   } else if (!this.buttonPressed) {
     var scale = 1;
+    this.stateData.lastDrawnAmount = this.measure;
   } else {
     var scale = max;
+    delete this.stateData.lastDrawnAmount;
   }
   var duration = 100;
   if (0 <= dt && dt < duration) {
