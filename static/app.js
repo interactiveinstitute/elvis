@@ -215,17 +215,24 @@ App.prototype.twist = function(direction) {
 
   if (this.countdown) clearTimeout(this.countdown);
 
-  var newInput = this.input + factor;
-  var newMeasure = this.config.watthour.mapping * Math.pow(newInput, 2);
-  newMeasure = Math.round(newMeasure * 10) / 10;
-  if (this.config.watthour.min <= newMeasure && newMeasure <= this.config.watthour.max) {
-    this.input = newInput;
-    this.measure = (this.beforeMaximum == -1) ? newMeasure : this.beforeMaximum;
-    this.beforeMaximum = -1;
-  } else if (newMeasure > this.config.watthour.max && this.beforeMaximum == -1) {
-    this.input = newInput;
-    this.beforeMaximum = this.measure;
-    this.measure = this.config.watthour.max;
+  if (this.config.watthour.limitOptions) {
+    var options = this.config.watthour.options;
+    var index = options.indexOf(this.measure) + factor;
+    if (0 <= index && index < options.length)
+      this.measure = options[index];
+  } else {
+    var newInput = this.input + factor;
+    var newMeasure = this.config.watthour.mapping * Math.pow(newInput, 2);
+    newMeasure = Math.round(newMeasure * 10) / 10;
+    if (this.config.watthour.min <= newMeasure && newMeasure <= this.config.watthour.max) {
+      this.input = newInput;
+      this.measure = (this.beforeMaximum == -1) ? newMeasure : this.beforeMaximum;
+      this.beforeMaximum = -1;
+    } else if (newMeasure > this.config.watthour.max && this.beforeMaximum == -1) {
+      this.input = newInput;
+      this.beforeMaximum = this.measure;
+      this.measure = this.config.watthour.max;
+    }
   }
 };
 
