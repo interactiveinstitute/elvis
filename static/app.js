@@ -157,8 +157,12 @@ App.prototype.setServer = function(config, source) {
   }.bind(this));
 };
 
-App.prototype.round = function(Wh) {
-  return Wh.toFixed(3);
+App.prototype.round = function(Wh, toWhole) {
+  if (toWhole) {
+    return '' + Math.round(Wh);
+  } else {
+    return Wh.toFixed(3);
+  }
 };
 
 App.prototype.updateUsed = function() {
@@ -251,6 +255,8 @@ App.prototype.onButtonUp = function() {
       this.used = this.used.map(function() { return 0; });
       this.start = +new Date;
       this.lastUsedUpdate = 0;
+      if (this.config.watthour.roundAmount)
+        this.measure = Math.round(this.measure);
       this.setState(App.STATE.PROGRESS);
   }
 };
@@ -434,7 +440,7 @@ App.prototype.draw[App.STATE.WINDING] = function(ctx, t, u) {
 
   ctx.restore();
 
-  this.drawAmount(ctx, t, u, size, this.measure);
+  this.drawAmount(ctx, t, u, size, this.measure, this.config.watthour.roundAmount);
 
   ctx.restore();
 
@@ -551,20 +557,29 @@ App.prototype.drawSlices = function(ctx, t, u, size) {
   }
 };
 
-App.prototype.drawAmount = function(ctx, t, u, size, amount) {
+App.prototype.drawAmount = function(ctx, t, u, size, amount, round) {
+  if (round && amount == 1000) {
+    var number = '1';
+    var label = 'kWh left';
+  } else {
+  if (round) console.log(amount);
+    var number = this.round(amount, round);
+    var label = 'Wh left';
+  }
+
   ctx.rotate(Math.PI / 4)
   ctx.fillStyle = '#fff';
   ctx.font = this.getFont(18);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(this.round(amount), 0, -size - 20);
+  ctx.fillText(number, 0, -size - 20);
 
   ctx.font = this.getFont(10);
   ctx.fillStyle = '#fff';
   ctx.font = this.getFont(10);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('Wh left', 0, -size - 5);
+  ctx.fillText(label, 0, -size - 5);
 };
 
 App.prototype.drawList = function(ctx, t, u) {

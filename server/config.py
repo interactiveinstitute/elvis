@@ -61,7 +61,10 @@ CLIENT_CONFIG = {
     "min": 1,
     "max": 1000,
     "start": 1,
-    "mapping": .05
+    "mapping": .05,
+    "options": [1, 10, 100, 1000],
+    "limitOptions": True,
+    "roundAmount": True,
   },
   "countdown": 100,
   "resetTiming": {
