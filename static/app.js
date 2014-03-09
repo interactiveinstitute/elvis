@@ -262,8 +262,6 @@ App.prototype.stopResetting = function() {
 };
 
 App.prototype.draw = function(t) {
-  requestAnimationFrame(this.draw.bind(this));
-
   var changed = this.state != this.previousState;
   if (changed) {
     this.drawUtil.t0 = t;
@@ -272,13 +270,16 @@ App.prototype.draw = function(t) {
 
   var ctx = this.canvas.getContext('2d');
 
-  ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  // ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); doesn't work
+  // on Raspberry Pi.
   ctx.beginPath();
   ctx.rect(0, 0, this.canvas.width, this.canvas.height);
   ctx.fillStyle = 'black';
   ctx.fill();
 
   this.draw[this.state].bind(this)(ctx, t, this.drawUtil);
+
+  requestAnimationFrame(this.draw.bind(this));
 };
 
 App.prototype.draw[App.STATE.INITIALIZING] = function(ctx, t, u) {
