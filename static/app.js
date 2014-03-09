@@ -562,7 +562,6 @@ App.prototype.drawAmount = function(ctx, t, u, size, amount, round) {
     var number = '1';
     var label = 'kWh left';
   } else {
-  if (round) console.log(amount);
     var number = this.round(amount, round);
     var label = 'Wh left';
   }
