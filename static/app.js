@@ -519,10 +519,12 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.fillText('Wh used', 0, -size - 5);
   ctx.restore();
 
-  var totalMinutes = (this.end - this.start) / 1000 / 60;
-  var hours = Math.floor(totalMinutes / 60);
-  var minutes = Math.round(totalMinutes % 60);
-  var time = + hours + ':' + ((minutes < 10) ? '0' : '') + minutes;
+  var totalSeconds = (this.end - this.start) / 1000;
+  //var totalMinutes = (this.end - this.start) / 1000 / 60;
+  var hours = Math.floor(totalSeconds / 3600);
+  var minutes = Math.floor(totalSeconds / 60);
+  var seconds = Math.round(totalSeconds % 60);
+  var time = + hours + ':' + ((minutes < 10) ? '0' : '') + minutes + + ((seconds < 10) ? '0' : '') + seconds;
 
   ctx.save();
   ctx.translate(u.cx, u.cy);
@@ -541,7 +543,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   ctx.font = this.getFont(10);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('hours', 0, -size - 5);
+  ctx.fillText('time (h:m:s)', 0, -size - 5);
   ctx.restore();
 
   this.drawList(ctx, t, u);
