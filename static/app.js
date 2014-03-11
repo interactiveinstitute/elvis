@@ -569,10 +569,10 @@ App.prototype.drawSlices = function(ctx, t, u, size) {
 App.prototype.drawAmount = function(ctx, t, u, size, amount, round) {
   if (round && amount == 1000) {
     var number = '1';
-    var label = 'kWh left';
+    var label = 'kWh';
   } else {
     var number = this.round(amount, round);
-    var label = 'Wh left';
+    var label = 'Wh';
   }
 
   ctx.rotate(Math.PI / 4)
