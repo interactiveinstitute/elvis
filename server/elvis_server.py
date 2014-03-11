@@ -24,7 +24,7 @@ import time
 import threading
 import tornado.ioloop
 import tornado.web
-
+import os
 import util
 
 class DataHandler(tornado.web.RequestHandler):
@@ -138,8 +138,8 @@ class TwistApp(tornado.web.Application, util.Publisher):
     
     
     #Add some priority to this
-    import os
-    os.nice(10)
+    #import os
+    os.nice(15)
 
     # long int, long int, unsigned short, unsigned short, unsigned int
     FORMAT = 'llHHl'
@@ -171,6 +171,7 @@ class TwistApp(tornado.web.Application, util.Publisher):
     self.publish(TwistApp.Topic.UserInput, event)
 
   def run(self):
+    os.nice(10)
     try: tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt: print
     
