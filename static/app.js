@@ -218,7 +218,7 @@ App.prototype.twist = function(direction) {
   var deltaTime = currTime - this.lastTwist;
   //console.log('deltaTime:', deltaTime);
   
-  if (deltaTime <= 200) return;
+  if (deltaTime <= 50) return;
   
   this.lastTwist = currTime;
 
