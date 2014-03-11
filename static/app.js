@@ -215,8 +215,8 @@ App.prototype.twist = function(direction) {
   
   //Dont change more than 5 option per second. 
   var currTime = new Date().getTime();
-  var deltaTime = currTime - lastTwist;
-  console.log('deltaTime:', deltaTime);
+  var deltaTime = currTime - this.lastTwist;
+  //console.log('deltaTime:', deltaTime);
   
   if (deltaTime <= 200) return;
   
