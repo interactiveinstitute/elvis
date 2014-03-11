@@ -524,7 +524,7 @@ App.prototype.draw[App.STATE.FINISHED] = function(ctx, t, u) {
   var hours = Math.floor(totalSeconds / 3600);
   var minutes = Math.floor(totalSeconds / 60);
   var seconds = Math.round(totalSeconds % 60);
-  var time = + hours + ':' + ((minutes < 10) ? '0' : '') + minutes + ((seconds < 10) ? '0' : '') + seconds;
+  var time = + hours + ':' + ((minutes < 10) ? '0' : '') + minutes + ':' + ((seconds < 10) ? '0' : '') + seconds;
 
   ctx.save();
   ctx.translate(u.cx, u.cy);
