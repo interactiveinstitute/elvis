@@ -135,6 +135,11 @@ class TwistApp(tornado.web.Application, util.Publisher):
 
   def read_input(self, callback):
     # Event handling code from http://stackoverflow.com/questions/5060710
+    
+    
+    #Add some priority to this
+    import os
+    os.nice(10)
 
     # long int, long int, unsigned short, unsigned short, unsigned int
     FORMAT = 'llHHl'
