@@ -95,6 +95,8 @@ App.prototype.construct = function(canvas) {
     cy: this.canvas.height / 2,
     colors: []
   };
+  
+  this.lastTwist = new Date().getTime();
 
   this.setState(App.STATE.INITIALIZING);
 
@@ -209,6 +211,14 @@ App.prototype.twist = function(direction) {
     this.setState(App.STATE.WINDING);
   }
   if (this.state != App.STATE.WINDING) return;
+  
+  
+  //Dont change more than 5 option per second. 
+  var currTime = new Date().getTime();
+  var deltaTime = currTime - lastTwist;
+  this.lastTwist = currTime;
+  if (deltaTime < 200) return;
+
 
   if (direction == App.DIRECTION.DECREASE) var factor = -1;
   else if (direction == App.DIRECTION.INCREASE) var factor = 1;
