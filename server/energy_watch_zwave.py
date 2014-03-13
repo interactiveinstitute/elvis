@@ -178,7 +178,7 @@ class Plug(PubSub):
   def _refresh(self, command_class):
     self.zway.run('devices[%d].instances[0].commandClasses[%d].Get()' % (self.id, command_class))
   def refresh_power(self): 
-    if !self.connected:
+    if not self.connected:
       return 
     
     self._refresh(49) 
