@@ -102,7 +102,7 @@ class Plug(PubSub):
       self.updateReqTime = now
       
       
-    if and TimeSinceUpdateReq > 2:
+    if TimeSinceUpdateReq > 2:
       if TimeSincePowerUpdate > 6:
         changed = self.set_connected(False)
       else:
