@@ -109,8 +109,8 @@ class Plug(PubSub):
     self._set_option(16, 1) # Remembers state after power loss. 
     self._set_option(40, 1) # report power changes immediately starting at 1 %
     self._set_option(42, 1) # report standard power changes starting at 1 %
-    self._set_option(43, 255) # send reports only when polling
-    self._set_option(47, 3600) # send unrecorded power reports every hour
+    self._set_option(43, 5) # send reports  1 ever sec  # only when polling
+    self._set_option(47, 2) #  every other second #send unrecorded power reports every hour
     self._set_option(52, 0) # don't turn on or off devices
 
     # Colors
