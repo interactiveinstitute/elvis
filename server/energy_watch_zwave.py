@@ -36,11 +36,16 @@ class Plug(PubSub):
     self.set_connected(not self.zway.devices[str(id)]['data']['isFailed']['value'])
     self.updateTime = 0
     self.configTime = 0
+    self.lastdataTime = 0
+    self.lastsendTime = 0
 
     self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
     self.zway.subscribe(self.on_update, 'updateTime')
     self.zway.subscribe(self.on_power_update, 'devices.%d.instances.0.commandClasses.49.data.4' % id)
     self.zway.subscribe(self.on_connection_update, 'devices.%d.instances.0.commandClasses.37.data.level' % id)
+    self.zway.subscribe(self.on_lastdata_update, 'devices.%d.data.lastReceived' % id)
+    self.zway.subscribe(self.on_lastsend_update, 'devices.%d.data.lastSend' % id)
+    
 
   def get_power(self):
     if self.connected:
@@ -57,19 +62,41 @@ class Plug(PubSub):
 
     if self.W != old_W:
       self.publish()
+      
+  def on_lastdata_update(self,data,key):
+    self.lastdataTime = data["updateTime"]
+    
+    return
+  
+  def on_lastsend_update(self,data,key):
+    self.lastsendTime = data["updateTime"]
+    return
+  
+  
+      
 
   def on_update(self,data,key):
     
     #Check against our last update.
     ThisTime = int(data)
     
-    if (ThisTime - self.updateTime) > 6:
+    
+    #How long ago did we hear from this plug.   
+    TimeSinceHeardOf = ThisTime - self.lastdataTime
+    
+    #Have we gotten a reply to the last question. 
+    HasReplied = self.lastdataTime >= self.lastsendTime
+    
+    if not HasReplied and (TimeSinceHeardOf > 6) :
       changed = self.set_connected(False)
     else:
       changed = self.set_connected(True)
       
     if changed:
       self.publish()
+      
+    if TimeSinceHeardOf > 4:
+      self.refresh_power()
     
     return
 
