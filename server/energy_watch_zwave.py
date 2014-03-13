@@ -82,12 +82,15 @@ class Plug(PubSub):
     
     
     #How long ago did we hear from this plug.   
-    TimeSinceHeardOf = ThisTime - self.lastdataTime
+    #TimeSinceHeardOf = ThisTime - self.lastdataTime
     
     #Have we gotten a reply to the last question. 
-    HasReplied = self.lastdataTime >= self.lastsendTime
+    #HasReplied = self.lastdataTime >= self.lastsendTime
     
-    if not HasReplied and (TimeSinceHeardOf > 6) :
+    #if not HasReplied and (TimeSinceHeardOf > 6) :
+    TimeSincePowerUpdate = ThisTime - self.updateTime
+    
+    if TimeSincePowerUpdate > 6:
       changed = self.set_connected(False)
     else:
       changed = self.set_connected(True)
@@ -95,7 +98,7 @@ class Plug(PubSub):
     if changed:
       self.publish()
       
-    if TimeSinceHeardOf > 4:
+    if TimeSincePowerUpdate > 4:
       self.refresh_power()
     
     return
