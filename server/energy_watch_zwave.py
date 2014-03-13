@@ -100,7 +100,7 @@ class Plug(PubSub):
     if changed:
       self.publish()
       
-    if TimeSincePowerUpdate > 4:
+    if TimeSincePowerUpdate > 4 and self.FailedUpdates == 0:
       self.refresh_power()
       self.FailedUpdates += 1
     
