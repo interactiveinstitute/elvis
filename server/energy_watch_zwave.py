@@ -95,21 +95,24 @@ class Plug(PubSub):
     if self.updateReqTime == 0:
       TimeSinceUpdateReq = 0
     else:
-      TimeSinceUpdateReq = self.updateReqTime - now
-      
-    
-    if TimeSincePowerUpdate > 6 and TimeSinceUpdateReq > 2:
-      changed = self.set_connected(False)
-    else:
-      changed = self.set_connected(True)
-      self.updateReqTime = 0 
-      
-    if changed:
-      self.publish()
+      TimeSinceUpdateReq = now - self.updateReqTime
       
     if TimeSincePowerUpdate > 4 and self.updateReqTime == 0:
       self.refresh_power()
       self.updateReqTime = now
+      
+      
+    if and TimeSinceUpdateReq > 2:
+      if TimeSincePowerUpdate > 6:
+        changed = self.set_connected(False)
+      else:
+        changed = self.set_connected(True)
+        self.updateReqTime = 0 
+      
+      if changed:
+        self.publish()
+      
+   
     
     return
 
