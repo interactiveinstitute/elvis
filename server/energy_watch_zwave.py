@@ -38,7 +38,7 @@ class Plug(PubSub):
     self.configTime = 0
     self.lastdataTime = 0
     self.lastsendTime = 0
-    self.FailedUpdates = 0
+    self.updateReqTime = 0
 
     self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
     self.zway.subscribe(self.on_update, 'updateTime')
@@ -91,18 +91,25 @@ class Plug(PubSub):
     #if not HasReplied and (TimeSinceHeardOf > 6) :
     TimeSincePowerUpdate = ThisTime - self.updateTime
     
-    if TimeSincePowerUpdate > 6 and self.FailedUpdates > 0:
+    now = time()
+    if self.updateReqTime == 0:
+      TimeSinceUpdateReq = 0
+    else:
+      TimeSinceUpdateReq = self.updateReqTime - now
+      
+    
+    if TimeSincePowerUpdate > 6 and TimeSinceUpdateReq > 2:
       changed = self.set_connected(False)
     else:
       changed = self.set_connected(True)
-      self.FailedUpdates = 0 
+      self.updateReqTime = 0 
       
     if changed:
       self.publish()
       
-    if TimeSincePowerUpdate > 4 and self.FailedUpdates == 0:
+    if TimeSincePowerUpdate > 4 and self.updateReqTime == 0:
       self.refresh_power()
-      self.FailedUpdates += 1
+      self.updateReqTime = now
     
     return
 
