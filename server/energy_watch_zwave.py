@@ -22,6 +22,7 @@ import tornado
 import energy_watch
 from pubsub import PubSub
 from zway import ZWay
+from time import time
 
 class Plug(PubSub):
   def __init__(self, id, zway):
@@ -34,6 +35,7 @@ class Plug(PubSub):
     self.connected = False
     self.set_connected(not self.zway.devices[str(id)]['data']['isFailed']['value'])
     self.updateTime = 0
+    self.configTime = 0
 
     self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
     self.zway.subscribe(self.on_update, 'updateTime')
@@ -104,6 +106,15 @@ class Plug(PubSub):
     self.zway.run(command)
 
   def configure(self):
+    
+    #Configur only if not configured recently. 
+    currentTime = time()
+    
+    if currentTime - self.configTime < 60:
+      return
+    else:
+      self.configTime = currentTime
+    
     print 'configure:', self.id
     self._set_option(1, 0) # plugs always active
     self._set_option(16, 1) # Remembers state after power loss. 
