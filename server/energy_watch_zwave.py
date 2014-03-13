@@ -110,7 +110,7 @@ class Plug(PubSub):
     #Configur only if not configured recently. 
     currentTime = time()
     
-    if currentTime - self.configTime < 60:
+    if (currentTime - self.configTime) < 60:
       return
     else:
       self.configTime = currentTime
