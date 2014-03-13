@@ -35,10 +35,10 @@ class Plug(PubSub):
     self.set_connected(not self.zway.devices[str(id)]['data']['isFailed']['value'])
     self.updateTime = 0
 
-    self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
+    #self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
     self.zway.subscribe(self.on_update, 'updateTime')
     self.zway.subscribe(self.on_power_update, 'devices.%d.instances.0.commandClasses.49.data.4' % id)
-    self.zway.subscribe(self.on_connection_update, 'devices.%d.instances.0.commandClasses.37.data.level' % id)
+    #self.zway.subscribe(self.on_connection_update, 'devices.%d.instances.0.commandClasses.37.data.level' % id)
 
   def get_power(self):
     if self.connected:
