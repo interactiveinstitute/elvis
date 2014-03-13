@@ -35,10 +35,10 @@ class Plug(PubSub):
     self.set_connected(not self.zway.devices[str(id)]['data']['isFailed']['value'])
     self.updateTime = 0
 
-    #self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
+    self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
     self.zway.subscribe(self.on_update, 'updateTime')
     self.zway.subscribe(self.on_power_update, 'devices.%d.instances.0.commandClasses.49.data.4' % id)
-    #self.zway.subscribe(self.on_connection_update, 'devices.%d.instances.0.commandClasses.37.data.level' % id)
+    self.zway.subscribe(self.on_connection_update, 'devices.%d.instances.0.commandClasses.37.data.level' % id)
 
   def get_power(self):
     if self.connected:
@@ -61,7 +61,7 @@ class Plug(PubSub):
     #Check against our last update.
     ThisTime = int(data)
     
-    if (ThisTime - self.updateTime) > 5:
+    if (ThisTime - self.updateTime) > 6:
       changed = self.set_connected(False)
     else:
       changed = self.set_connected(True)
@@ -109,8 +109,8 @@ class Plug(PubSub):
     self._set_option(16, 1) # Remembers state after power loss. 
     self._set_option(40, 1) # report power changes immediately starting at 1 %
     self._set_option(42, 1) # report standard power changes starting at 1 %
-    self._set_option(43, 5) # send reports  1 ever sec  # only when polling
-    self._set_option(47, 2) #  every other second #send unrecorded power reports every hour
+    self._set_option(43, 255) # send reports  1 ever sec  # only when polling
+    self._set_option(47, 3600) #  send unrecorded power reports every hour
     self._set_option(52, 0) # don't turn on or off devices
 
     # Colors
