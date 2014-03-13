@@ -110,10 +110,13 @@ class Plug(PubSub):
     #Configur only if not configured recently. 
     currentTime = time()
     
-    if (currentTime - self.configTime) < 60:
-      return
-    else:
-      self.configTime = currentTime
+    try:
+      if (currentTime - self.configTime) < 60:
+        return
+      else:
+        self.configTime = currentTime
+    except AttributeError:
+        self.configTime = currentTime
     
     print 'configure:', self.id
     self._set_option(1, 0) # plugs always active
