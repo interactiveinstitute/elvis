@@ -31,10 +31,12 @@ class Plug(PubSub):
     self.W = -1
     self.color = 9
     self.zway = zway
-    self.connected = None
+    self.connected = False
     self.set_connected(not self.zway.devices[str(id)]['data']['isFailed']['value'])
+    self.updateTime = 0
 
     self.zway.subscribe(self.on_fail_update, 'devices.%d.data.isFailed' % id)
+    self.zway.subscribe(self.on_update, 'updateTime')
     self.zway.subscribe(self.on_power_update, 'devices.%d.instances.0.commandClasses.49.data.4' % id)
     self.zway.subscribe(self.on_connection_update, 'devices.%d.instances.0.commandClasses.37.data.level' % id)
 
@@ -48,8 +50,26 @@ class Plug(PubSub):
     old_W = self.W
     self.W = float(data['val']['value'])
 
+    #Store time everytime we get an update.
+    self.updateTime = int(data['val']['updateTime'])  
+
     if self.W != old_W:
       self.publish()
+
+  def on_update(self,data,key):
+    
+    #Check against our last update.
+    ThisTime = int(data)
+    
+    if (ThisTime - self.updateTime) > 3:
+      changed = self.set_connected(False)
+    else
+      changed = self.set_connected(True)
+      
+    if changed:
+      self.publish()
+    
+    return
 
   def on_fail_update(self, data, key):
     self.set_connected(not data['value'])
@@ -67,6 +87,10 @@ class Plug(PubSub):
       else:
         self.configure()
       print self.id, 'connected?', self.connected
+      
+      return True
+    else:
+      return False
 
   def _set_option(self, register, value):
     # Not sure what this parameter does, but this reflects the web interface's behavior
