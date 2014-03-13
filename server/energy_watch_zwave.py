@@ -63,7 +63,7 @@ class Plug(PubSub):
     
     if (ThisTime - self.updateTime) > 3:
       changed = self.set_connected(False)
-    else
+    else:
       changed = self.set_connected(True)
       
     if changed:
