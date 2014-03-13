@@ -91,26 +91,26 @@ class Plug(PubSub):
     #if not HasReplied and (TimeSinceHeardOf > 6) :
     TimeSincePowerUpdate = ThisTime - self.updateTime
     
-    now = time()
-    if self.updateReqTime == 0:
-      TimeSinceUpdateReq = 0
+    #now = time()
+    #if self.updateReqTime == 0:
+    #  TimeSinceUpdateReq = 0
+    #else:
+    #  TimeSinceUpdateReq = now - self.updateReqTime
+      
+    #if TimeSincePowerUpdate > 4 and self.updateReqTime == 0:
+    #  self.refresh_power()
+    #  self.updateReqTime = now
+      
+      
+    #if TimeSinceUpdateReq > 2:
+    if TimeSincePowerUpdate > 10:
+      changed = self.set_connected(False)
     else:
-      TimeSinceUpdateReq = now - self.updateReqTime
+      changed = self.set_connected(True)
+      #self.updateReqTime = 0 
       
-    if TimeSincePowerUpdate > 4 and self.updateReqTime == 0:
-      self.refresh_power()
-      self.updateReqTime = now
-      
-      
-    if TimeSinceUpdateReq > 2:
-      if TimeSincePowerUpdate > 6:
-        changed = self.set_connected(False)
-      else:
-        changed = self.set_connected(True)
-        self.updateReqTime = 0 
-      
-      if changed:
-        self.publish()
+    if changed:
+      self.publish()
       
    
     
