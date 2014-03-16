@@ -61,7 +61,7 @@ class ZWay(PubSub):
       return
     
     for f in data:
-      if f[1][0] == 3:
+      if f[1][0] > 1:
         Stalled.append(f[2])
 
     #self.Stalled = Stalled
