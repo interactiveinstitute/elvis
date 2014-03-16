@@ -48,7 +48,7 @@ class ZWay(PubSub):
     return self._do_http_request('/ZwaveAPI/Data/%d' % (since))
     
   def get_data_queue(self):
-    return self._do_http_request('/ZWaveAPI/InspectQueue' % (since))
+    return self._do_http_request('/ZWaveAPI/InspectQueue')
     
   def get_plugs_with_stalled_data(self):
     
