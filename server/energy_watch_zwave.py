@@ -101,10 +101,13 @@ class Plug(PubSub):
     #  self.refresh_power()
     #  self.updateReqTime = now
       
+    changed = False  
       
     #if TimeSinceUpdateReq > 2:
-    if TimeSincePowerUpdate > 10:
-      changed = self.set_connected(False)
+    if TimeSincePowerUpdate > 3:
+      #If the queue is not stalled or it is stalled but this plug is causing it set the plug to the dissconnected state. 
+      if len(self.zway.stalled) == 0 or self.id in self.zway.stalled:
+        changed = self.set_connected(False)
     else:
       changed = self.set_connected(True)
       #self.updateReqTime = 0 
@@ -112,8 +115,6 @@ class Plug(PubSub):
     if changed:
       self.publish()
       
-   
-    
     return
 
   def on_fail_update(self, data, key):
