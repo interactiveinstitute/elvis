@@ -33,6 +33,7 @@ class ZWay(PubSub):
     self.server = server
     self.last_timestamp = 0
     self.devices = {}
+    self.stalled = []
 
   def start(self):
     self.get_updates()
@@ -76,6 +77,8 @@ class ZWay(PubSub):
 
     self.last_timestamp = int(data['updateTime'])
     self.last_own_timestamp = time.time()
+    
+    self.stalled = self.get_plugs_with_stalled_data()
 
     for key, data in data.iteritems():
       if key == 'devices':
