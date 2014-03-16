@@ -48,6 +48,24 @@ class ZWay(PubSub):
     
   def get_data_queue(self):
     return self._do_http_request('/ZWaveAPI/InspectQueue' % (since))
+    
+  def get_plugs_with_stalled_data(self):
+    
+    Stalled = []
+    
+    try:
+      data = json.loads(self.get_data_queue())
+    except TypeError:
+      print 'Could not parse data queue'
+      return
+    
+    for f in data:
+      if f[1][0] == 3:
+        Stalled.appand(f[2])
+
+    #self.Stalled = Stalled
+
+    return Stalled
 
   def get_updates(self):
     try:
