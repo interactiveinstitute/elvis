@@ -45,6 +45,9 @@ class ZWay(PubSub):
 
   def get_data(self, since=0):
     return self._do_http_request('/ZwaveAPI/Data/%d' % (since))
+    
+  def get_data_queue(self):
+    return self._do_http_request('/ZWaveAPI/InspectQueue' % (since))
 
   def get_updates(self):
     try:
